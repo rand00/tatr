@@ -1,0 +1,19 @@
+(executable
+ (public_name tatr)
+ (modes native)
+ (name main)
+ (flags (:standard
+         (-w -27-33-32-26)
+         ))
+ (ocamlopt_flags 
+  (:standard
+   -O3
+   ;; -dcmm
+   ))
+ (libraries
+  tatr
+  angstrom
+  containers
+  cmdliner
+  )
+ )
