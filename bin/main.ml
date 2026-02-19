@@ -60,7 +60,21 @@ module Tree = struct
       | Tree (v, subtree) -> Tree (f v, CCList.map aux subtree)
     in
     aux tree
-  
+
+  let iter_df f tree =
+    let rec aux = function
+      | Nil -> ()
+      | Tree (v, subtree) ->
+        f v;
+        aux_depth subtree
+    and aux_depth = function
+      | [] -> ()
+      | head :: tail ->
+        aux head;
+        aux_depth tail
+    in
+    aux tree
+
 end
 
 module Line_data = struct
@@ -93,7 +107,7 @@ module Parse = struct
             function
             | '\t' -> n_indent + tab_is_spaces, succ idx, None
             | ' '  -> n_indent + 1            , succ idx, None
-            | '\n' | '\r' ->
+            | '\n' ->
               failwith "Parse.Indentation_tree.count_indent_until_visual: \
                         we only support a single line as input"
             | _ ->
@@ -220,24 +234,20 @@ module Parse = struct
   
 end
 
-(*goto use Re to regex-match with given user regex (tag = regex)
-  * impl: use Re.compile + Re.execp + Re.Glob
-*)
-
 (*goto howto;
   * POC-version
-    * parse user tag-query given via argv:
+    [*] parse user tag-query given via argv:
       * split on commas
       * map with Re.Glob + Re.compile + Re.execp into a proposition (word -> bool)
       * if there are no tag-regexes / empty-string - fail
-    * read lines incrementally (using In_channel) from argv file given
-    * incrementally append lines to tree using Parse.Indentation_tree.add_line
+    [*] read lines incrementally (using In_channel) from argv file given
+    [*] incrementally append lines to tree using Parse.Indentation_tree.add_line
       * when returns None - the tree is done
         * (remember to reuse the line that lead to None)
         * query the prev tree with user-supplied tag-query:
-          * have 3 different tree-extractors based on user-config (that can query tree):
+          [ ] have 3 different tree-extractors based on user-config (that can query tree):
             * [ fulltree; subtree; matchtree ]
-              * (in POC just hardcode which one we choose)
+              [ ] (in POC just hardcode which one we choose)
             * where user query is tried against each Line_data within a branch
               * each tag-regex is tested agains the nodes from the root towards each branch leaf
                 * on node:
@@ -248,7 +258,7 @@ end
                     * recurse
                 * on leaf :
                   * if there are more unmatched tag-regexes, then return None
-      * if the queried tree is Some - then
+      [ ] if the queried tree is Some - then
         * pretty-print
           * the lines extracted
           * a line to fast-open the file in editor/less/zim
@@ -258,6 +268,17 @@ end
 
 open CCOption.Infix 
 
+let pretty_print_tree tree =
+  tree |> Tree.iter_df (fun line_data ->
+    (*> Note: important to print tab here - otherwise some tab-based formats
+        become visually weird *)
+    CCFormat.printf "%05d:\t%s\n%!"
+      line_data.Line_data.line_num
+      line_data.Line_data.line;
+  )
+
+(*? gomaybe fix that some lines are dropped from output - line numbers are
+    correct now; so is probably just empty lines that are filtered away via parser?*)
 let next_tree ~config in_chan unused_line_data =
   let rec aux line_num tree =
     let* line = In_channel.input_line in_chan in
@@ -268,18 +289,23 @@ let next_tree ~config in_chan unused_line_data =
         tree
     in
     match new_tree with
-    | None -> Some (tree, line_data)
+    | None -> Some (Tree.rev tree, line_data)
     | Some tree -> aux (succ line_num) tree
   in
-  let init_tree = match unused_line_data with
-    | None -> Tree.empty
+  let line_num, init_tree = match unused_line_data with
+    | None -> 1, Tree.empty
     | Some unused_line_data -> 
-      Parse.Indentation_tree.add_line ~config
-        unused_line_data
-        Tree.empty
-      |> CCOption.get_exn_or "Error: first line couldn't be added"
+      let tree =
+        Parse.Indentation_tree.add_line ~config
+          unused_line_data
+          Tree.empty
+        |> CCOption.get_exn_or "Error: first line couldn't be added"
+      in
+      (*> Note: this +1 is for the _next_ line-number via aux recursive call
+          .. as is done in the inner aux recursion *)
+      unused_line_data.line_num +1, tree
   in
-  aux 0 init_tree
+  aux line_num init_tree
 
 let () =
   let query = Sys.argv.(1) |> Parse.Query.of_string in
@@ -298,6 +324,10 @@ let () =
       | None -> ()
       | Some (tree, unused_line_data) ->
         (*goto query + print tree*)
+        pretty_print_tree tree;
+        CCFormat.printf "%s\n%!"
+          "-----------------------------------------------------------------\
+           ---------------";
         loop @@ Some unused_line_data
     in
     loop None
