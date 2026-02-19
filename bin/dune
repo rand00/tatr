@@ -12,7 +12,8 @@
    ))
  (libraries
   tatr
-  angstrom
+  ;; angstrom
+  re
   containers
   cmdliner
   )

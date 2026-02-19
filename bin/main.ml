@@ -1,6 +1,16 @@
 
 module A = Angstrom
 
+module Config = struct
+
+  type t = {
+    tab_is_spaces : int;
+    include_char : char -> bool;
+    exclude_char : char -> bool;
+  }
+
+end
+
 module Tree = struct
 
   open CCOption.Infix
@@ -21,6 +31,10 @@ module Tree = struct
         if under parent then
           Some (Tree (parent, [ singleton v ]))
         else
+          (*> Note: returning None can possibly be interpreted as tree
+              being 'done' and a new one should be started instead
+              .. this depends on how 'under' is defined
+          *)
           None
       | Tree (parent, (headsub :: tailsub as subtree)) ->
         if under parent then
@@ -48,6 +62,24 @@ module Tree = struct
     in
     aux tree
   
+end
+
+module Line_data = struct
+
+  type t = {
+    indent : int;
+    words : string list;
+    line : string;
+    line_num : int;
+  }
+
+  let init ~line ~line_num = {
+    line;
+    line_num;
+    indent = 0;
+    words = [];
+  }
+
 end
 
 module Parse = struct
@@ -112,34 +144,116 @@ module Parse = struct
       done;
       maybe_append_word ();
       CCList.rev !words
-    
-    let add_line_to_tree
-        ~tab_is_spaces
-        ~include_char
-        ~exclude_char
-        line
-        tree =
+
+    let add_line ~config line_data tree =
       (*> Note that n-indent is not the same as index
         * tab is counted a specified number of spaces
         * when supporting unicode in the future, whitespace can be of even more sizes
       *)
+      let line = line_data.Line_data.line in
       let indent, idx_visual =
-        count_indent_until_visual ~tab_is_spaces line
+        count_indent_until_visual
+          ~tab_is_spaces:config.Config.tab_is_spaces
+          line
       in
       match idx_visual with
-      | None -> tree
+      | None -> Some tree
       | Some idx_visual ->
         let words =
           extract_words
-            ~include_char
-            ~exclude_char
+            ~include_char:config.Config.include_char
+            ~exclude_char:config.Config.exclude_char
             ~from_idx:idx_visual
             line
         in
-        failwith "todo"
+        let under parent = parent.Line_data.indent < indent in
+        let v = Line_data.{ line_data with indent; words } in
+        Tree.insert_in_first_path ~under v tree
 
   end
 
 end
 
-let () = print_endline "Hello, World!"
+(*goto use Re to regex-match with given user regex (tag = regex)
+  * impl: use Re.compile + Re.execp + Re.Glob
+*)
+
+(*goto howto;
+  * POC-version
+    * parse user tag-query given via argv:
+      * split on commas
+      * map with Re.Glob + Re.compile + Re.execp into a proposition (word -> bool)
+      * if there are no tag-regexes / empty-string - fail
+    * read lines incrementally (using In_channel) from argv file given
+    * incrementally append lines to tree using Parse.Indentation_tree.add_line
+      * when returns None - the tree is done
+        * (remember to reuse the line that lead to None)
+        * query the prev tree with user-supplied tag-query:
+          * have 3 different tree-extractors based on user-config (that can query tree):
+            * [ fulltree; subtree; matchtree ]
+              * (in POC just hardcode which one we choose)
+            * where user query is tried against each Line_data within a branch
+              * each tag-regex is tested agains the nodes from the root towards each branch leaf
+                * on node:
+                  * when a tag-regex is matched,
+                    * the regex it's removed from testing
+                      * if there are no more tag-regexes left,
+                        * return Some tree (depending on version of extractor - include subtree)
+                    * recurse
+                * on leaf :
+                  * if there are more unmatched tag-regexes, then return None
+      * if the queried tree is Some - then
+        * pretty-print
+          * the lines extracted
+          * a line to fast-open the file in editor/less/zim
+          * a line-separator
+        * else don't print anything
+*)
+
+open CCOption.Infix 
+
+let next_tree ~config in_chan unused_line_data =
+  let rec aux line_num tree =
+    let* line = In_channel.input_line in_chan in
+    let line_data = Line_data.init ~line ~line_num in
+    let new_tree = 
+      Parse.Indentation_tree.add_line ~config
+        line_data
+        tree
+    in
+    match new_tree with
+    | None -> Some (tree, line_data)
+    | Some tree -> aux (succ line_num) tree
+  in
+  let init_tree = match unused_line_data with
+    | None -> Tree.empty
+    | Some unused_line_data -> 
+      Parse.Indentation_tree.add_line ~config
+        unused_line_data
+        Tree.empty
+      |> CCOption.get_exn_or "Error: first line couldn't be added"
+  in
+  aux 0 init_tree
+
+let () =
+  let query = Sys.argv.(1) in
+  let file = Sys.argv.(2) in
+  let tab_is_spaces = 4 in
+  let include_char _ = false in
+  let exclude_char _ = false in
+  let config = Config.{
+    tab_is_spaces;
+    exclude_char;
+    include_char;
+  } in
+  In_channel.with_open_text file (fun in_chan ->
+    let rec loop unused_line_data =
+      match next_tree ~config in_chan unused_line_data with
+      | None -> ()
+      | Some (tree, unused_line_data) ->
+        (*goto query + print tree*)
+        (*goto recurse - passing unused_line_data*)
+        failwith "todo"
+    in
+    loop None
+  )
