@@ -3,7 +3,7 @@
  (modes native)
  (name main)
  (flags (:standard
-         (-w -27-33-32-26)
+         (-w -27-33-32-26-69)
          ))
  (ocamlopt_flags 
   (:standard

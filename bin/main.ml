@@ -1,5 +1,4 @@
 
-module A = Angstrom
 
 module Config = struct
 
@@ -172,6 +171,53 @@ module Parse = struct
 
   end
 
+  module Query = struct
+
+    module Tag_regex = struct
+
+      module T = struct
+      
+        type t = {
+          id : int;
+          orig_regex : string;
+          prop : string -> bool;
+        }
+
+        let compare x y = CCInt.compare x.id y.id
+
+      end
+      include T
+
+      let make =
+        let id = ref 0 in
+        fun tag_regex ->
+          let id' = !id in
+          incr id;
+          let prop =
+            Re.Glob.glob tag_regex
+              ~anchored:true (*match on whole string*)
+              ~pathname:false
+              ~period:false
+              ~expand_braces:true
+              ~double_asterisk:false
+            |> Re.compile
+            |> Re.execp
+          in
+          { id = id'; orig_regex = tag_regex; prop }
+
+      module Set = CCSet.Make(T)
+
+    end
+
+    type t = Tag_regex.Set.t 
+
+    let of_string str : t =
+      CCString.split_on_char ',' str
+      |> CCList.map Tag_regex.make
+      |> Tag_regex.Set.of_list
+
+  end
+  
 end
 
 (*goto use Re to regex-match with given user regex (tag = regex)
@@ -236,7 +282,7 @@ let next_tree ~config in_chan unused_line_data =
   aux 0 init_tree
 
 let () =
-  let query = Sys.argv.(1) in
+  let query = Sys.argv.(1) |> Parse.Query.of_string in
   let file = Sys.argv.(2) in
   let tab_is_spaces = 4 in
   let include_char _ = false in
@@ -252,8 +298,7 @@ let () =
       | None -> ()
       | Some (tree, unused_line_data) ->
         (*goto query + print tree*)
-        (*goto recurse - passing unused_line_data*)
-        failwith "todo"
+        loop @@ Some unused_line_data
     in
     loop None
   )
