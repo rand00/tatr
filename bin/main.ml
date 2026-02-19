@@ -266,39 +266,74 @@ module Query = struct
     let match_fulltree tree : _ Tree.t =
       failwith "todo"
 
+    (*> goto goo; fix that each tag-matcher should match at least _once_ per
+        matched branch in returned tree *)
     let match_matchtree (query:t) tree : _ Tree.t =
-      let rec aux ancestor_matched = function
+      let rec is_complete = function
+        | Nil -> false
+        | Tree ((v, path_is_complete'), children) ->
+          path_is_complete'
+          || CCList.exists is_complete children
+      in
+      let rec aux ancestor_matched acc_path_matches = function
         | Nil -> Nil
-        | Tree (v, subtree) ->
+        | Tree (v, children) ->
           (* CCFormat.eprintf "DEBUG: words = %a\n%!" *)
           (*   (CCList.pp CCString.pp) v.Line_data.words; *)
-          let found_match =
-            query |> RSet.exists (fun regex ->
+          let matches, non_matches =
+            query |> RSet.partition (fun regex ->
               v.Line_data.words |> CCList.exists regex.Tag_regex.prop 
             )
           in
+          let acc_path_matches = RSet.union matches acc_path_matches in
+          (*> Note: we need to continue to look even when complete already*)
+          let path_is_complete = RSet.(cardinal acc_path_matches = cardinal query) in
+          let found_match = not @@ RSet.is_empty matches in
           (* CCFormat.eprintf "DEBUG: found-match = %b\n%!" found_match; *)
-          if found_match then
-            Tree (v, aux_depth true subtree)
-          else if ancestor_matched then
-            let matching_children = aux_depth true subtree in
+          if found_match then (
+            let matching_children =
+              aux_children true acc_path_matches children
+              |> CCList.filter is_complete
+            in
+            let any_child_is_complete = 
+              not @@ CCList.is_empty matching_children
+            in
+            (*> Note: filtering incomplete paths in tree away*)
+            if path_is_complete || any_child_is_complete then
+              Tree ((v, path_is_complete), matching_children)
+            else
+              Nil
+          ) else if ancestor_matched then (
+            let matching_children =
+              aux_children true acc_path_matches children
+              |> CCList.filter is_complete
+            in
+            let any_child_is_complete = 
+              not @@ CCList.is_empty matching_children
+            in
             match matching_children with
             | [] -> Nil
-            | children -> Tree (v, children)
-          else
-            let matching_children = aux_depth false subtree in
+            | children -> Tree ((v, path_is_complete), children)
+          ) else
+            let matching_children =
+              aux_children false acc_path_matches children
+              |> CCList.filter is_complete
+            in
+            let any_child_is_complete = 
+              not @@ CCList.is_empty matching_children
+            in
             match matching_children with
             | [] -> Nil
             | [ child ] -> child
-            | children -> Tree (v, children)
-      and aux_depth ancestor_matched children = 
+            | children -> Tree ((v, path_is_complete), children)
+      and aux_children ancestor_matched acc_path_matches children = 
         children |> CCList.filter_map (fun child ->
-          match aux ancestor_matched child with
+          match aux ancestor_matched acc_path_matches child with
           | Nil -> None
           | tree -> Some tree
         )
       in
-      aux false tree
+      aux false RSet.empty tree
 
   end
 
@@ -339,13 +374,13 @@ end
 
 open CCOption.Infix 
 
-let pretty_print_tree tree =
+let pretty_print_tree ~get_line_num ~get_line tree =
   tree |> Tree.iter_df (fun line_data ->
     (*> Note: important to print tab here - otherwise some tab-based formats
         become visually weird *)
     CCFormat.printf "%05d:\t%s\n%!"
-      line_data.Line_data.line_num
-      line_data.Line_data.line;
+      (get_line_num line_data)
+      (get_line line_data);
   )
 
 (*? gomaybe fix that some lines are dropped from output - line numbers are
@@ -400,6 +435,9 @@ let () =
     exclude_char;
     include_char;
   } in
+  let get_line_num (v, _) = v.Line_data.line_num
+  and get_line     (v, _) = v.Line_data.line
+  in
   In_channel.with_open_text file (fun in_chan ->
     let rec loop unused_line_data =
       let tree, unused_line_data, read_more =
@@ -411,7 +449,7 @@ let () =
       begin match filtered_tree with
         | Nil -> ()
         | tree -> 
-          pretty_print_tree tree;
+          tree |> pretty_print_tree ~get_line_num ~get_line;
           CCFormat.printf "%s\n%!"
             "-----------------------------------------------------------------\
              ---------------";
