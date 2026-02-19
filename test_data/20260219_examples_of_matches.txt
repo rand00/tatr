@@ -1,0 +1,39 @@
+
+// > 'query=niseq' should match all nodes that contain it
+* top
+  * @niseq
+    * @niseq
+      * more more
+        * niseq
+          * fniseq
+            * ffniseq
+
+//> more complex tree structure to test nesting
+//  * interesting query (via match_matchtree) on this: 'dune exec tatr '*tree*,another' <file>'
+//    * it extracts selected subbranches correctly (:
+* the tree
+  * has branches
+    * with children
+  * and more branches
+    * with more children
+  * and yet
+    * another
+      * child
+        * was
+          * found
+      * and
+        * another
+* another parent?
+  * with a
+    * child 
+
+//> test that nesting works even with empty line in middle
+// - check why does this work already?
+//   - ah it's 'count_indent_until_visual' that return an 'idx_visual option' (:
+
+* some tree
+
+  * is separated
+
+    * by whitespacelines
+
