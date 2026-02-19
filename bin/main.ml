@@ -215,29 +215,31 @@ module Tag_regex = struct
   end
   include T
 
-  (*> goto goo debug globbing / make issue / change regex style
-    * needs:
-      * I want to be able to say:
-        * match this string prefixed _optionally_ by this-specific/a single char
-          * .. which I can't make work with 'glob'
-            * only via e.g. '*niseq' where it matches on any amount of chars
-  *)
+  (*> Warning; don't like it's sematics - the only advantage is that you can
+      avoid writing as many chars in regex to match on any seq of chars*)
+  let make_glob regex =
+    Re.Glob.glob regex
+      (*> match on whole string*)
+      ~anchored:true
+      ~pathname:false
+      ~period:false
+      ~expand_braces:true
+      ~double_asterisk:false
+    |> Re.compile
+    |> Re.execp
+
+  let make_posix regex =
+    (*> Note: wrapping in start/end-line tag so this is not a partial matcher
+        by default *)
+    Re.Posix.compile_pat ("^"^regex^"$")
+    |> Re.execp
+
   let make =
     let id = ref 0 in
     fun tag_regex ->
       let id' = !id in
       incr id;
-      let prop =
-        Re.Glob.glob tag_regex
-          (*> match on whole string*)
-          ~anchored:true
-          ~pathname:false
-          ~period:false
-          ~expand_braces:true
-          ~double_asterisk:false
-        |> Re.compile
-        |> Re.execp
-      in
+      let prop = make_posix tag_regex in
       { id = id'; orig_regex = tag_regex; prop }
 
   module Set = CCSet.Make(T)
