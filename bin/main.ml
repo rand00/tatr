@@ -12,11 +12,17 @@ end
 
 module Tree = struct
 
-  open CCOption.Infix
+  module T = struct
+  
+    type 'a t =
+      | Nil
+      | Tree of ('a * 'a t list)
+    [@@deriving show]
 
-  type 'a t =
-    | Nil
-    | Tree of ('a * 'a t list)
+  end
+  include T
+
+  open CCOption.Infix
 
   let empty = Nil
 
@@ -36,9 +42,14 @@ module Tree = struct
           *)
           None
       | Tree (parent, (headsub :: tailsub as subtree)) ->
-        if under parent then
-          Some (Tree (parent, singleton v :: subtree))
-        else
+        if under parent then (
+          let try_insert_further_down = aux headsub in
+          match try_insert_further_down with
+          | None ->
+            Some (Tree (parent, singleton v :: subtree))
+          | Some headsub' ->
+            Some (Tree (parent, headsub' :: tailsub))
+        ) else
           let+ headsub = aux headsub in
           Tree (parent, headsub :: tailsub)
     in
@@ -77,6 +88,8 @@ module Tree = struct
 
 end
 
+open Tree.T
+
 module Line_data = struct
 
   type t = {
@@ -84,7 +97,7 @@ module Line_data = struct
     words : string list;
     line : string;
     line_num : int;
-  }
+  } [@@deriving show]
 
   let init ~line ~line_num = {
     line;
@@ -185,54 +198,103 @@ module Parse = struct
 
   end
 
-  module Query = struct
+end
 
-    module Tag_regex = struct
+module Tag_regex = struct
 
-      module T = struct
-      
-        type t = {
-          id : int;
-          orig_regex : string;
-          prop : string -> bool;
-        }
+  module T = struct
 
-        let compare x y = CCInt.compare x.id y.id
+    type t = {
+      id : int;
+      orig_regex : string;
+      prop : string -> bool;
+    }
 
-      end
-      include T
-
-      let make =
-        let id = ref 0 in
-        fun tag_regex ->
-          let id' = !id in
-          incr id;
-          let prop =
-            Re.Glob.glob tag_regex
-              ~anchored:true (*match on whole string*)
-              ~pathname:false
-              ~period:false
-              ~expand_braces:true
-              ~double_asterisk:false
-            |> Re.compile
-            |> Re.execp
-          in
-          { id = id'; orig_regex = tag_regex; prop }
-
-      module Set = CCSet.Make(T)
-
-    end
-
-    type t = Tag_regex.Set.t 
-
-    let of_string str : t =
-      CCString.split_on_char ',' str
-      |> CCList.map Tag_regex.make
-      |> Tag_regex.Set.of_list
+    let compare x y = CCInt.compare x.id y.id
 
   end
-  
+  include T
+
+  let make =
+    let id = ref 0 in
+    fun tag_regex ->
+      let id' = !id in
+      incr id;
+      let prop =
+        Re.Glob.glob tag_regex
+          ~anchored:true (*match on whole string*)
+          ~pathname:false
+          ~period:false
+          ~expand_braces:true
+          ~double_asterisk:false
+        |> Re.compile
+        |> Re.execp
+      in
+      { id = id'; orig_regex = tag_regex; prop }
+
+  module Set = CCSet.Make(T)
+
 end
+
+module Query = struct
+
+  type t = Tag_regex.Set.t 
+
+  let of_string str : t =
+    CCString.split_on_char ',' str
+    |> CCList.map Tag_regex.make
+    |> Tag_regex.Set.of_list
+
+  module Tree = struct
+
+    module RSet = Tag_regex.Set
+
+    (*> goto goo;
+    *)
+    let match_subtree tree : _ Tree.t =
+      failwith "todo"
+
+    let match_fulltree tree : _ Tree.t =
+      failwith "todo"
+
+    let match_matchtree (query:t) tree : _ Tree.t =
+      let rec aux ancestor_matched = function
+        | Nil -> Nil
+        | Tree (v, subtree) ->
+          (* CCFormat.eprintf "DEBUG: words = %a\n%!" *)
+          (*   (CCList.pp CCString.pp) v.Line_data.words; *)
+          let found_match =
+            query |> RSet.exists (fun regex ->
+              v.Line_data.words |> CCList.exists regex.Tag_regex.prop 
+            )
+          in
+          (* CCFormat.eprintf "DEBUG: found-match = %b\n%!" found_match; *)
+          if found_match then
+            Tree (v, aux_depth true subtree)
+          else if ancestor_matched then
+            let matching_children = aux_depth true subtree in
+            match matching_children with
+            | [] -> Nil
+            | children -> Tree (v, children)
+          else
+            let matching_children = aux_depth false subtree in
+            match matching_children with
+            | [] -> Nil
+            | [ child ] -> child
+            | children -> Tree (v, children)
+      and aux_depth ancestor_matched children = 
+        children |> CCList.filter_map (fun child ->
+          match aux ancestor_matched child with
+          | Nil -> None
+          | tree -> Some tree
+        )
+      in
+      aux false tree
+
+  end
+
+end
+
 
 (*goto howto;
   * POC-version
@@ -259,7 +321,7 @@ end
                 * on leaf :
                   * if there are more unmatched tag-regexes, then return None
       [ ] if the queried tree is Some - then
-        * pretty-print
+        [*] pretty-print
           * the lines extracted
           * a line to fast-open the file in editor/less/zim
           * a line-separator
@@ -281,16 +343,23 @@ let pretty_print_tree tree =
     correct now; so is probably just empty lines that are filtered away via parser?*)
 let next_tree ~config in_chan unused_line_data =
   let rec aux line_num tree =
-    let* line = In_channel.input_line in_chan in
-    let line_data = Line_data.init ~line ~line_num in
-    let new_tree = 
-      Parse.Indentation_tree.add_line ~config
-        line_data
-        tree
-    in
-    match new_tree with
-    | None -> Some (Tree.rev tree, line_data)
-    | Some tree -> aux (succ line_num) tree
+    let line_opt = In_channel.input_line in_chan in
+    match line_opt with
+    | None ->
+      let read_more = false in
+      Tree.rev tree, None, read_more
+    | Some line -> 
+      let line_data = Line_data.init ~line ~line_num in
+      let new_tree = 
+        Parse.Indentation_tree.add_line ~config
+          line_data
+          tree
+      in
+      match new_tree with
+      | None ->
+        let read_more = true in
+        Tree.rev tree, Some line_data, read_more
+      | Some tree -> aux (succ line_num) tree
   in
   let line_num, init_tree = match unused_line_data with
     | None -> 1, Tree.empty
@@ -308,7 +377,7 @@ let next_tree ~config in_chan unused_line_data =
   aux line_num init_tree
 
 let () =
-  let query = Sys.argv.(1) |> Parse.Query.of_string in
+  let query = Sys.argv.(1) |> Query.of_string in
   let file = Sys.argv.(2) in
   let tab_is_spaces = 4 in
   let include_char _ = false in
@@ -320,15 +389,23 @@ let () =
   } in
   In_channel.with_open_text file (fun in_chan ->
     let rec loop unused_line_data =
-      match next_tree ~config in_chan unused_line_data with
-      | None -> ()
-      | Some (tree, unused_line_data) ->
-        (*goto query + print tree*)
-        pretty_print_tree tree;
-        CCFormat.printf "%s\n%!"
-          "-----------------------------------------------------------------\
-           ---------------";
-        loop @@ Some unused_line_data
+      (* CCFormat.eprintf "DEBUG: loop iteration\n%!"; *)
+      let tree, unused_line_data, read_more =
+        next_tree ~config in_chan unused_line_data
+      in
+      (*> goto remove *)
+      CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree;
+      (*> goto switch matching-function out based on CLI-param*)
+      let filtered_tree = Query.Tree.match_matchtree query tree in
+      begin match filtered_tree with
+        | Nil -> ()
+        | tree -> 
+          pretty_print_tree tree;
+          CCFormat.printf "%s\n%!"
+            "-----------------------------------------------------------------\
+             ---------------";
+      end;
+      if read_more then loop @@ unused_line_data
     in
     loop None
   )
