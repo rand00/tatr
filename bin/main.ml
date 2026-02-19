@@ -215,6 +215,13 @@ module Tag_regex = struct
   end
   include T
 
+  (*> goto goo debug globbing / make issue / change regex style
+    * needs:
+      * I want to be able to say:
+        * match this string prefixed _optionally_ by this-specific/a single char
+          * .. which I can't make work with 'glob'
+            * only via e.g. '*niseq' where it matches on any amount of chars
+  *)
   let make =
     let id = ref 0 in
     fun tag_regex ->
@@ -222,7 +229,8 @@ module Tag_regex = struct
       incr id;
       let prop =
         Re.Glob.glob tag_regex
-          ~anchored:true (*match on whole string*)
+          (*> match on whole string*)
+          ~anchored:true
           ~pathname:false
           ~period:false
           ~expand_braces:true
@@ -249,8 +257,7 @@ module Query = struct
 
     module RSet = Tag_regex.Set
 
-    (*> goto goo;
-    *)
+    (*> goto goo; *)
     let match_subtree tree : _ Tree.t =
       failwith "todo"
 
@@ -309,7 +316,7 @@ end
         * query the prev tree with user-supplied tag-query:
           [ ] have 3 different tree-extractors based on user-config (that can query tree):
             * [ fulltree; subtree; matchtree ]
-              [ ] (in POC just hardcode which one we choose)
+              [*] (in POC just hardcode which one we choose)
             * where user query is tried against each Line_data within a branch
               * each tag-regex is tested agains the nodes from the root towards each branch leaf
                 * on node:
@@ -320,7 +327,7 @@ end
                     * recurse
                 * on leaf :
                   * if there are more unmatched tag-regexes, then return None
-      [ ] if the queried tree is Some - then
+      [*] if the queried tree is not Nil - then
         [*] pretty-print
           * the lines extracted
           * a line to fast-open the file in editor/less/zim
@@ -380,6 +387,10 @@ let () =
   let query = Sys.argv.(1) |> Query.of_string in
   let file = Sys.argv.(2) in
   let tab_is_spaces = 4 in
+  (*> goto change back (ctrl via CLI)*)
+  (* let include_char = function *)
+  (*   | '@' -> true *)
+  (*   | _ -> false in *)
   let include_char _ = false in
   let exclude_char _ = false in
   let config = Config.{
@@ -389,12 +400,10 @@ let () =
   } in
   In_channel.with_open_text file (fun in_chan ->
     let rec loop unused_line_data =
-      (* CCFormat.eprintf "DEBUG: loop iteration\n%!"; *)
       let tree, unused_line_data, read_more =
         next_tree ~config in_chan unused_line_data
       in
-      (*> goto remove *)
-      CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree;
+      (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
       (*> goto switch matching-function out based on CLI-param*)
       let filtered_tree = Query.Tree.match_matchtree query tree in
       begin match filtered_tree with
