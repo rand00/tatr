@@ -13,8 +13,8 @@
  (libraries
   tatr
   ;; angstrom
-  re
-  containers
+  ;; re
+  ;; containers
   cmdliner
   )
  (preprocess

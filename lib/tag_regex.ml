@@ -1,0 +1,42 @@
+
+module T = struct
+
+  type t = {
+    id : int;
+    orig_regex : string;
+    prop : string -> bool;
+  }
+
+  let compare x y = CCInt.compare x.id y.id
+
+end
+include T
+
+(*> Warning; don't like it's sematics - the only advantage is that you can
+    avoid writing as many chars in regex to match on any seq of chars*)
+let make_glob regex =
+  Re.Glob.glob regex
+    (*> match on whole string*)
+    ~anchored:true
+    ~pathname:false
+    ~period:false
+    ~expand_braces:true
+    ~double_asterisk:false
+  |> Re.compile
+  |> Re.execp
+
+let make_posix regex =
+  (*> Note: wrapping in start/end-line tag so this is not a partial matcher
+      by default *)
+  Re.Posix.compile_pat ("^"^regex^"$")
+  |> Re.execp
+
+let make =
+  let id = ref 0 in
+  fun tag_regex ->
+    let id' = !id in
+    incr id;
+    let prop = make_posix tag_regex in
+    { id = id'; orig_regex = tag_regex; prop }
+
+module Set = CCSet.Make(T)
