@@ -6,11 +6,14 @@ module T = struct
     orig_regex : string;
     prop : string -> bool;
   }
+  [@@deriving show]
 
   let compare x y = CCInt.compare x.id y.id
 
 end
 include T
+
+let pp_t = pp
 
 (*> Warning; don't like it's sematics - the only advantage is that you can
     avoid writing as many chars in regex to match on any seq of chars*)
@@ -39,4 +42,7 @@ let make =
     let prop = make_posix tag_regex in
     { id = id'; orig_regex = tag_regex; prop }
 
-module Set = CCSet.Make(T)
+module Set = struct
+  include CCSet.Make(T)
+  let pp = pp pp_t
+end

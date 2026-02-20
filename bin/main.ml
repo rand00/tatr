@@ -85,9 +85,18 @@ let next_tree ~config in_chan unused_line_data =
   in
   aux line_num init_tree
 
-let () =
-  let query = Sys.argv.(1) |> Query.of_string in
-  let file = Sys.argv.(2) in
+let main query files =
+  let query = match query with
+    | None -> failwith "You need to pass a query - see --help";
+    | Some query -> 
+      if Tag_regex.Set.is_empty query then
+        failwith "You need to pass a query - see --help";
+      query |> Tag_regex.Set.iter (fun regex ->
+        if regex.Tag_regex.orig_regex = "" then
+          failwith "Your queries shouldn't be empty - see --help"
+      );
+      query
+  in
   let tab_is_spaces = 4 in
   (* let include_char = function *)
   (*   | '@' -> true *)
@@ -102,26 +111,33 @@ let () =
   let get_line_num (v, _) = v.Line_data.line_num
   and get_line     (v, _) = v.Line_data.line
   in
-  In_channel.with_open_text file (fun in_chan ->
-    let rec loop unused_line_data =
-      let tree, unused_line_data, read_more =
-        next_tree ~config in_chan unused_line_data
+  (*> goto recursively find files if file is dir*)
+  files |> CCList.iter (fun file -> 
+    In_channel.with_open_text file (fun in_chan ->
+      let rec loop unused_line_data =
+        let tree, unused_line_data, read_more =
+          next_tree ~config in_chan unused_line_data
+        in
+        (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
+        (*> goto switch matching-function out based on CLI-param*)
+        let filtered_tree = Query.Tree.match_matchtree query tree in
+        (* let filtered_tree = Query.Tree.match_subtree query tree in *)
+        (* let filtered_tree = Query.Tree.match_fulltree query tree in *)
+        (* let filtered_tree = Query.Tree.match_fulltree' query tree in *)
+        begin match filtered_tree with
+          | Nil -> ()
+          | tree -> 
+            tree |> pretty_print_tree ~get_line_num ~get_line;
+            CCFormat.printf "%s\n%!"
+              "-----------------------------------------------------------------\
+               ---------------";
+        end;
+        if read_more then loop @@ unused_line_data
       in
-      (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
-      (*> goto switch matching-function out based on CLI-param*)
-      let filtered_tree = Query.Tree.match_matchtree query tree in
-      (* let filtered_tree = Query.Tree.match_subtree query tree in *)
-      (* let filtered_tree = Query.Tree.match_fulltree query tree in *)
-      (* let filtered_tree = Query.Tree.match_fulltree' query tree in *)
-      begin match filtered_tree with
-        | Nil -> ()
-        | tree -> 
-          tree |> pretty_print_tree ~get_line_num ~get_line;
-          CCFormat.printf "%s\n%!"
-            "-----------------------------------------------------------------\
-             ---------------";
-      end;
-      if read_more then loop @@ unused_line_data
-    in
-    loop None
+      loop None
+    )
   )
+
+let () = Cli.apply main
+
+

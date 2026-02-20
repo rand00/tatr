@@ -1,12 +1,16 @@
 
 open Tree.T
 
-type t = Tag_regex.Set.t 
+type t = Tag_regex.Set.t
+[@@deriving show]
 
 let of_string str : t =
   CCString.split_on_char ',' str
   |> CCList.map Tag_regex.make
   |> Tag_regex.Set.of_list
+
+let parse str : (t, string) CCResult.t =
+  CCResult.guard_str (fun () -> of_string str)
 
 module Tree = struct
 
