@@ -85,7 +85,15 @@ let next_tree ~config in_chan unused_line_data =
   in
   aux line_num init_tree
 
-let main query files =
+module CSet = CCSet.Make(CCChar)
+
+let main
+    query
+    files
+    tab_is_spaces
+    include_chars
+    exclude_chars
+  =
   let query = match query with
     | None -> failwith "You need to pass a query - see --help";
     | Some query -> 
@@ -97,12 +105,10 @@ let main query files =
       );
       query
   in
-  let tab_is_spaces = 4 in
-  (* let include_char = function *)
-  (*   | '@' -> true *)
-  (*   | _ -> false in *)
-  let include_char _ = false in
-  let exclude_char _ = false in
+  let include_chars = CSet.of_list include_chars in
+  let exclude_chars = CSet.of_list exclude_chars in
+  let include_char c = CSet.mem c include_chars in
+  let exclude_char c = CSet.mem c exclude_chars in
   let config = Config.{
     tab_is_spaces;
     exclude_char;

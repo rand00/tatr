@@ -17,6 +17,23 @@ module A = struct
     let docv = "FILE" in
     Arg.(value & pos_right 0 file [] & info [] ~docv ~doc)
 
+  let tab_is_spaces = 
+    let doc = "Baba is you, and tab is `n` spaces." in
+    let docv = "INT" in
+    Arg.(value & opt int 4 & info ["tab-is-spaces"] ~docv ~doc)
+      
+  let include_chars = 
+    let doc = "Include this commaseparated list of chars when tokenizing \
+               words." in
+    let docv = "CHAR,…" in
+    Arg.(value & opt (list char) [] & info ["include-chars"] ~docv ~doc)
+      
+  let exclude_chars = 
+    let doc = "Exclude this commaseparated list of chars when tokenizing \
+               words." in
+    let docv = "CHAR,…" in
+    Arg.(value & opt (list char) [] & info ["exclude-chars"] ~docv ~doc)
+      
 end
 
 let apply main_f =
@@ -30,6 +47,9 @@ let apply main_f =
         const main_f
         $ A.query
         $ A.files
+        $ A.tab_is_spaces
+        $ A.include_chars
+        $ A.exclude_chars
       )
   in
   Cmd.(eval cmd |> exit)
