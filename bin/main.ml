@@ -35,10 +35,19 @@ open Tree.T
 *)
 
 let pretty_print_tree ~get_line_num ~get_line tree =
+  let prev_line_num = ref None in
   tree |> Tree.iter_df (fun v ->
+    let line_num = get_line_num v in
+    begin match !prev_line_num with
+      | None -> ()
+      | Some prev_line_num ->
+        if prev_line_num <> pred line_num then
+          CCFormat.printf "......\n%!"
+    end;
     (*> Note: important to print tab here - otherwise some tab-based formats
         become visually weird *)
-    CCFormat.printf "%05d:\t%s\n%!" (get_line_num v) (get_line v);
+    CCFormat.printf "%05d:\t%s\n%!" line_num (get_line v);
+    prev_line_num := Some line_num;
   )
 
 let next_tree ~config in_chan unused_line_data =
