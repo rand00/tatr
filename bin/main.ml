@@ -2,38 +2,6 @@
 open Tatr
 open Tree.T
 
-(*goto howto;
-  * POC-version
-    [*] parse user tag-query given via argv:
-      * split on commas
-      * map with Re.Glob + Re.compile + Re.execp into a proposition (word -> bool)
-      * if there are no tag-regexes / empty-string - fail
-    [*] read lines incrementally (using In_channel) from argv file given
-    [*] incrementally append lines to tree using Parse.Indentation_tree.add_line
-      * when returns None - the tree is done
-        * (remember to reuse the line that lead to None)
-        * query the prev tree with user-supplied tag-query:
-          [ ] have 3 different tree-extractors based on user-config (that can query tree):
-            * [ fulltree; subtree; matchtree ]
-              [*] (in POC just hardcode which one we choose)
-            * where user query is tried against each Line_data within a branch
-              * each tag-regex is tested agains the nodes from the root towards each branch leaf
-                * on node:
-                  * when a tag-regex is matched,
-                    * the regex it's removed from testing
-                      * if there are no more tag-regexes left,
-                        * return Some tree (depending on version of extractor - include subtree)
-                    * recurse
-                * on leaf :
-                  * if there are more unmatched tag-regexes, then return None
-      [*] if the queried tree is not Nil - then
-        [*] pretty-print
-          * the lines extracted
-          * a line to fast-open the file in editor/less/zim
-          * a line-separator
-        * else don't print anything
-*)
-
 let pretty_print_tree ~get_line_num ~get_line tree =
   let prev_line_num = ref None in
   tree |> Tree.iter_df (fun v ->
@@ -140,9 +108,8 @@ let main
           | Nil -> ()
           | tree -> 
             tree |> pretty_print_tree ~get_line_num ~get_line;
-            CCFormat.printf "%s\n%!"
-              "-----------------------------------------------------------------\
-               ---------------";
+            (*> goto choose based on term-width?*)
+            CCFormat.printf "%s\n%!" @@ CCString.make 80 '-';
         end;
         if read_more then loop @@ unused_line_data
       in
