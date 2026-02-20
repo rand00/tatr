@@ -93,6 +93,7 @@ let main
     tab_is_spaces
     include_chars
     exclude_chars
+    match_filter
   =
   let query = match query with
     | None -> failwith "You need to pass a query - see --help";
@@ -125,11 +126,16 @@ let main
           next_tree ~config in_chan unused_line_data
         in
         (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
-        (*> goto switch matching-function out based on CLI-param*)
-        let filtered_tree = Query.Tree.match_matchtree query tree in
-        (* let filtered_tree = Query.Tree.match_subtree query tree in *)
-        (* let filtered_tree = Query.Tree.match_fulltree query tree in *)
-        (* let filtered_tree = Query.Tree.match_fulltree' query tree in *)
+        let filtered_tree = match match_filter with
+          | `Matchtree ->
+            Query.Tree.match_matchtree query tree
+          | `Subtree ->
+            Query.Tree.match_subtree query tree
+          | `Fulltree ->
+            Query.Tree.match_fulltree query tree
+          | `Completetree ->
+            Query.Tree.match_fulltree' query tree
+        in
         begin match filtered_tree with
           | Nil -> ()
           | tree -> 

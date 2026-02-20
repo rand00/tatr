@@ -33,7 +33,21 @@ module A = struct
                words." in
     let docv = "CHAR,…" in
     Arg.(value & opt (list char) [] & info ["exclude-chars"] ~docv ~doc)
-      
+
+  let match_filter = 
+    Arg.(value & vflag `Subtree [
+      `Matchtree, info ["extract-matchtree"]
+        ~doc:"Extract only the paths of tree that match query completely.";
+      `Subtree, info ["extract-subtree"]
+        ~doc:"Extract the paths of tree that match query completely + \
+              their subtrees.";
+      `Fulltree, info ["extract-fulltree"]
+        ~doc:"Extract the paths of tree that match query completely + \
+              their subtrees and their ancestors.";
+      `Completetree, info ["extract-completetree"]
+        ~doc:"Extract the complete tree where the query match somewhere within.";
+    ])
+  
 end
 
 let apply main_f =
@@ -50,6 +64,7 @@ let apply main_f =
         $ A.tab_is_spaces
         $ A.include_chars
         $ A.exclude_chars
+        $ A.match_filter 
       )
   in
   Cmd.(eval cmd |> exit)
