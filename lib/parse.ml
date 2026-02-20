@@ -5,7 +5,7 @@ module Indentation_tree = struct
     let n_indent, _, idx_visual = 
       let exception Shortcircuit of (int * int * int option) in
       try
-        line |> CCString.fold_left (fun (n_indent, idx, idx_visual as acc) ->
+        line |> CCString.fold_left (fun (n_indent, idx, _idx_visual) ->
           function
           | '\t' -> n_indent + tab_is_spaces, succ idx, None
           | ' '  -> n_indent + 1            , succ idx, None
