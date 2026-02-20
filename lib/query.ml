@@ -17,7 +17,35 @@ module Tree = struct
     | Tree ((_, path_is_complete'), children) ->
       path_is_complete'
       || CCList.exists is_complete children
-        
+
+  (*> goto should this become 'match_fulltree'? instead*)
+  let match_fulltree' (query:t) tree : _ Tree.t =
+    let rec aux acc_path_matches = function
+      | Nil -> Nil
+      | Tree (v, children) ->
+        let matches, _ =
+          query |> RSet.partition (fun regex ->
+            v.Line_data.words |> CCList.exists regex.Tag_regex.prop 
+          )
+        in
+        let acc_path_matches = RSet.union matches acc_path_matches in
+        let path_is_complete = RSet.(cardinal acc_path_matches = cardinal query) in
+        let matching_children = aux_children acc_path_matches children in
+        Tree ((v, path_is_complete), matching_children)
+    and aux_children acc_path_matches children = 
+      children |> CCList.filter_map (fun child ->
+        match aux acc_path_matches child with
+        | Nil -> None
+        | tree -> Some tree
+      )
+    in
+    let checked_tree = aux RSet.empty tree in
+    if is_complete checked_tree then
+      checked_tree
+    else
+      Nil
+  
+  (** filters internal branches, but includes subtree+ancestors of matching paths *)
   let match_fulltree (query:t) tree : _ Tree.t =
     let rec aux ancestor_matched acc_path_matches = function
       | Nil -> Nil
@@ -50,8 +78,7 @@ module Tree = struct
             else
               Nil
           )
-        ) else (*havn't found any match yet*)
-          (*> goto goo also include tree above complete children*)
+        ) else ((*havn't found any match yet*)
           let matching_children =
             aux_children false acc_path_matches children
             |> CCList.filter is_complete
@@ -59,6 +86,7 @@ module Tree = struct
           match matching_children with
           | [] -> Nil
           | children -> Tree ((v, path_is_complete), children)
+        )
     and aux_children ancestor_matched acc_path_matches children = 
       children |> CCList.filter_map (fun child ->
         match aux ancestor_matched acc_path_matches child with

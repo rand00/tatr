@@ -100,9 +100,10 @@ let () =
       in
       (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
       (*> goto switch matching-function out based on CLI-param*)
-      (* let filtered_tree = Query.Tree.match_matchtree query tree in *)
+      let filtered_tree = Query.Tree.match_matchtree query tree in
       (* let filtered_tree = Query.Tree.match_subtree query tree in *)
-      let filtered_tree = Query.Tree.match_fulltree query tree in
+      (* let filtered_tree = Query.Tree.match_fulltree query tree in *)
+      (* let filtered_tree = Query.Tree.match_fulltree' query tree in *)
       begin match filtered_tree with
         | Nil -> ()
         | tree -> 
