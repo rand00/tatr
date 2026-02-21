@@ -40,7 +40,7 @@ module A = struct
         ~doc:"Extract only the paths of tree that match query completely.";
       `Subtree, info ["extract-subtree"]
         ~doc:"Extract the paths of tree that match query completely + \
-              their subtrees.";
+              their subtrees. This is the default.";
       `Fulltree, info ["extract-fulltree"]
         ~doc:"Extract the paths of tree that match query completely + \
               their subtrees and their ancestors.";
