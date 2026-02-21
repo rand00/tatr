@@ -9,8 +9,8 @@ module A = struct
                are queried for in the given white-space indented trees. \
                The comma means AND." in
     let docv = "REGEX,…" in
-    let format_conv = Arg.conv' Query.(parse, pp) in
-    Arg.(value & pos 0 (some format_conv) None & info [] ~docv ~doc)
+    (* let format_conv = Arg.conv' Query.(parse, pp) in *)
+    Arg.(value & pos 0 (some string) None & info [] ~docv ~doc)
 
   let files =
     let doc = "The files and directories to look for trees within." in
@@ -48,6 +48,10 @@ module A = struct
         ~doc:"Extract the complete tree where the query match somewhere within.";
     ])
   
+  let case_is_significant = 
+    let doc = "Character-case becomes significant for matching queries." in
+    Arg.(value & flag & info ["case-is-significant"] ~doc)
+      
 end
 
 let apply main_f =
@@ -64,7 +68,8 @@ let apply main_f =
         $ A.tab_is_spaces
         $ A.include_chars
         $ A.exclude_chars
-        $ A.match_filter 
+        $ A.match_filter
+        $ A.case_is_significant
       )
   in
   Cmd.(eval cmd |> exit)

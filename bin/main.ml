@@ -62,10 +62,13 @@ let main
     include_chars
     exclude_chars
     match_filter
+    case_is_significant
   =
   let query = match query with
     | None -> failwith "You need to pass a query - see --help";
-    | Some query -> 
+    | Some query ->
+      let ignore_case = not case_is_significant in
+      let query = Query.of_string ~ignore_case query in
       if Tag_regex.Set.is_empty query then
         failwith "You need to pass a query - see --help";
       query |> Tag_regex.Set.iter (fun regex ->

@@ -28,18 +28,19 @@ let make_glob regex =
   |> Re.compile
   |> Re.execp
 
-let make_posix regex =
+let make_posix ?(ignore_case=true) regex =
+  let opts = if ignore_case then [ `ICase ] else [] in
   (*> Note: wrapping in start/end-line tag so this is not a partial matcher
       by default *)
-  Re.Posix.compile_pat ("^"^regex^"$")
+  Re.Posix.compile_pat ~opts ("^"^regex^"$")
   |> Re.execp
 
 let make =
   let id = ref 0 in
-  fun tag_regex ->
+  fun ?ignore_case tag_regex ->
     let id' = !id in
     incr id;
-    let prop = make_posix tag_regex in
+    let prop = make_posix ?ignore_case tag_regex in
     { id = id'; orig_regex = tag_regex; prop }
 
 module Set = struct

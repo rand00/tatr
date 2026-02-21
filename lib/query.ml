@@ -4,13 +4,13 @@ open Tree.T
 type t = Tag_regex.Set.t
 [@@deriving show]
 
-let of_string str : t =
+let of_string ?ignore_case str : t =
   CCString.split_on_char ',' str
-  |> CCList.map Tag_regex.make
+  |> CCList.map (Tag_regex.make ?ignore_case)
   |> Tag_regex.Set.of_list
 
-let parse str : (t, string) CCResult.t =
-  CCResult.guard_str (fun () -> of_string str)
+let parse ?ignore_case str : (t, string) CCResult.t =
+  CCResult.guard_str (fun () -> of_string ?ignore_case str)
 
 module Tree = struct
 

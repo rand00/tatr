@@ -37,3 +37,8 @@
 
     * by whitespacelines
 
+//> ignore-case by default
+
+* This is
+  * A Leopard
+
