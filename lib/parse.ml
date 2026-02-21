@@ -31,7 +31,7 @@ module Indentation_tree = struct
     | '-'
     | 'A'..'Z'
     | '0'..'9' -> true
-    | _ -> false
+    | c -> let code = Char.code c in code >= 128 && code <= 255
 
   (*> Note: I made this interface to avoid too much extra allocation for lines*)
   let extract_words ~include_char ~exclude_char ~from_idx line =
@@ -81,6 +81,10 @@ module Indentation_tree = struct
           ~from_idx:idx_visual
           line
       in
+      (* begin *)
+      (*   if words |> CCList.exists (CCString.equal "rugbrød") then *)
+      (*     CCFormat.eprintf "DEBUG: saw rugbrød\n%!"; *)
+      (* end; *)
       let under parent = parent.Line_data.indent < indent in
       let v = Line_data.{ line_data with indent; words } in
       Tree.insert_in_first_path ~under v tree
