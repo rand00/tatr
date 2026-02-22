@@ -70,6 +70,7 @@ module Tree = struct
             in
             Tree ((v, path_is_complete), children)
           ) else (
+            (*> goto make tests for this logic, where all children are included if _some_ child is complete*)
             let matching_children =
               aux_children true acc_path_matches children
             in
@@ -77,6 +78,8 @@ module Tree = struct
               matching_children
               |> CCList.exists is_complete
             in
+            (*> goto brian; this part filters children by itself, even though we
+                don't apply CCList.filter as part of 'matching_children'*)
             if any_child_is_complete then
               Tree ((v, path_is_complete), matching_children)
             else
@@ -140,6 +143,9 @@ module Tree = struct
                 Nil
             )
           ) else ( (*don't include subtree of matching branches*)
+            (*> goto brian; note that this CCList.filter is running for each level of the tree
+                .. is this optimal enough? - could be more?
+            *)
             let matching_children =
               aux_children true acc_path_matches children
               |> CCList.filter is_complete
