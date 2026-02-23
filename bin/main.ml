@@ -63,6 +63,7 @@ let main
     exclude_chars
     match_filter
     case_is_significant
+    match_filename
   =
   let query = match query with
     | None -> failwith "You need to pass a query - see --help";
@@ -90,7 +91,9 @@ let main
   and get_line     (v, _) = v.Line_data.line
   in
   (*> goto recursively find files if file is dir*)
-  files |> CCList.iter (fun file -> 
+  files
+  |> Files.find_recursively ~match_filename
+  |> CCSeq.iter (fun file ->
     In_channel.with_open_text file (fun in_chan ->
       let rec loop unused_line_data =
         let tree, unused_line_data, read_more =
@@ -109,10 +112,17 @@ let main
         in
         begin match filtered_tree with
           | Nil -> ()
-          | tree -> 
+          | tree ->
+            let dashes = CCString.make 80 '-' in
+            let file_title =
+              let title = "---- " ^ file ^ " " in
+              let title = title |> CCString.pad ~side:`Right ~c:'-' 80 in
+              title
+            in
+            CCFormat.printf "%s\n%!" file_title;
             tree |> pretty_print_tree ~get_line_num ~get_line;
             (*> goto choose based on term-width?*)
-            CCFormat.printf "%s\n%!" @@ CCString.make 80 '-';
+            CCFormat.printf "%s\n%!" dashes;
         end;
         if read_more then loop @@ unused_line_data
       in

@@ -52,6 +52,13 @@ module A = struct
     let doc = "Character-case becomes significant for matching queries." in
     Arg.(value & flag & info ["case-is-significant"] ~doc)
       
+  let match_filename =
+    let doc = "Regular expression (shell globbing style) for matching on \
+               filenames to query on within the given directories." in
+    let docv = "REGEX" in
+    (* let format_conv = Arg.conv' Query.(parse, pp) in *)
+    Arg.(value & opt string "*" & info ["match-file"] ~docv ~doc)
+
 end
 
 let apply main_f =
@@ -70,6 +77,7 @@ let apply main_f =
         $ A.exclude_chars
         $ A.match_filter
         $ A.case_is_significant
+        $ A.match_filename
       )
   in
   Cmd.(eval cmd |> exit)
