@@ -1,17 +1,16 @@
 
 let make_glob regex =
   Re.Glob.glob regex
-    (*> match on whole string*)
-    ~anchored:true
+    ~anchored:true (*match on whole string*)
     ~pathname:true (*slashes not matched by '*'*)
-    ~period:true (*dotfiles*)
-    ~expand_braces:true
+    ~period:true   (*dotfiles need to be matched explicitly*)
+    ~expand_braces:false
     ~double_asterisk:false
   |> Re.compile
   |> Re.execp
 
 let find_recursively ~match_filename files =
-  let regex = make_glob match_filename in
+  let matching_filename = make_glob match_filename in
   let rec aux file =
     if not @@ Sys.is_directory file then
       CCSeq.pure file
@@ -21,9 +20,9 @@ let find_recursively ~match_filename files =
       |> CCArray.to_seq
       |> CCSeq.map (Filename.concat file)
       |> CCSeq.filter (fun file ->
-        if Sys.is_directory file then true else
-          let basename = Filename.basename file in
-          regex basename
+        Sys.is_directory file || (
+          matching_filename (Filename.basename file)
+        )
       )
       |> CCSeq.flat_map aux
   in
