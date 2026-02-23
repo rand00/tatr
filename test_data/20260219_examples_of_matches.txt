@@ -42,3 +42,10 @@
 * This is
   * A Leopard
 
+//> testing include-chars
+
+* my tree
+  * includes @chars
+  * and @char
+  * chars too
+  
