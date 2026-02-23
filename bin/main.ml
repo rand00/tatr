@@ -113,10 +113,11 @@ let main
         begin match filtered_tree with
           | Nil -> ()
           | tree ->
-            let dashes = CCString.make 80 '-' in
+            let sep_width = 80 in
+            let dashes = CCString.make sep_width '-' in
             let file_title =
-              let title = "---- " ^ file ^ " " in
-              let title = title |> CCString.pad ~side:`Right ~c:'-' 80 in
+              let title = "-- " ^ file ^ " " in
+              let title = title |> CCString.pad ~side:`Right ~c:'-' sep_width in
               title
             in
             CCFormat.printf "%s\n%!" file_title;
