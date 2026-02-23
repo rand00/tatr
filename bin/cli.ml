@@ -26,7 +26,7 @@ module A = struct
     let doc = "Include this commaseparated list of chars when tokenizing \
                words." in
     let docv = "CHAR,…" in
-    Arg.(value & opt (list char) [] & info ["include-chars"] ~docv ~doc)
+    Arg.(value & opt (list char) [] & info ["include-chars"; "c"] ~docv ~doc)
       
   let exclude_chars = 
     let doc = "Exclude this commaseparated list of chars when tokenizing \
