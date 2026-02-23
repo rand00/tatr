@@ -36,15 +36,15 @@ module A = struct
 
   let match_filter = 
     Arg.(value & vflag `Subtree [
-      `Matchtree, info ["extract-matchtree"]
+      `Matchtree,    info ["extract-matchtree"; "emt"]
         ~doc:"Extract only the paths of tree that match query completely.";
-      `Subtree, info ["extract-subtree"]
+      `Subtree,      info ["extract-subtree"; "est" ]
         ~doc:"Extract the paths of tree that match query completely + \
               their subtrees. This is the default.";
-      `Fulltree, info ["extract-fulltree"]
+      `Fulltree,     info ["extract-fulltree"; "eft"]
         ~doc:"Extract the paths of tree that match query completely + \
               their subtrees and their ancestors.";
-      `Completetree, info ["extract-completetree"]
+      `Completetree, info ["extract-completetree"; "ect"]
         ~doc:"Extract the complete tree where the query match somewhere within.";
     ])
   
