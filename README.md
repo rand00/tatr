@@ -9,10 +9,10 @@ extract the exact paths within the indented trees of the found text-files that m
 ```bash
 > tatr --match-file='*.txt' fix,code ~/my_notes
 ```
-.. where `fix` and `code` are words that need to be present in the matched tree, and `~/my_notes` is a directory to look in.
+.. where `fix` and `code` are words (a commaseparated list of regular expressions) that need to be present in the matched tree, and `~/my_notes` is a directory to look in.
 Indented trees of text in notes usually come in the form of deeply nested indented points. 
 
-I will write a blogpost in the future about how it's useful to take notes this way.
+I will probably write a blogpost in the future about how it's useful to take notes this way.
 
 ### Configuring `tatr` to include special characters to search for *tags*
 There are several options that allow you to configure `tatr` for your specific format - e.g. `--include-chars` lets you
@@ -85,6 +85,10 @@ search for words within a single line - but these tools
 don't operate at the tree-level. 
 
 A notetaking system like `zim` let you query for matching pages that contains tags - but not at the indented tree-level.
+
+Another notetaking system, `logseq`, has a feature called *flashcards*  where you tag a point-indented line with `#flashcard` and 
+then make a nested point with the answer. Then the system can play back questions to you and expose the answer upon request. 
+It will be relatively simple for the interested user to implement this via the existing tree-matchers of `tatr`.
 
 ## History
 
