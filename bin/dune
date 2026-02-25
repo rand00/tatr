@@ -12,15 +12,11 @@
    ))
  (libraries
   tatr
-  ;; angstrom
-  ;; re
-  ;; containers
   cmdliner
   )
  (preprocess
   (pps
    ppx_deriving.std
-   ;; ppx_deriving_yojson
    )
   )
  )
