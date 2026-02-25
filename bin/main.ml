@@ -108,7 +108,7 @@ let main
           | `Fulltree ->
             Query.Tree.match_fulltree query tree
           | `Completetree ->
-            Query.Tree.match_fulltree' query tree
+            Query.Tree.match_completetree query tree
         in
         begin match filtered_tree with
           | Nil -> ()
@@ -122,7 +122,6 @@ let main
             in
             CCFormat.printf "%s\n%!" file_title;
             tree |> pretty_print_tree ~get_line_num ~get_line;
-            (*> goto choose based on term-width?*)
             CCFormat.printf "%s\n%!" dashes;
         end;
         if read_more then loop @@ unused_line_data

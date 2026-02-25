@@ -22,8 +22,7 @@ module Tree = struct
       path_is_complete'
       || CCList.exists is_complete children
 
-  (*> goto should this become 'match_fulltree'? instead*)
-  let match_fulltree' (query:t) tree : _ Tree.t =
+  let match_completetree (query:t) tree : _ Tree.t =
     let rec aux acc_path_matches = function
       | Nil -> Nil
       | Tree (v, children) ->
