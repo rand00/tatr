@@ -14,9 +14,4 @@
   tatr
   cmdliner
   )
- (preprocess
-  (pps
-   ppx_deriving.std
-   )
-  )
  )
