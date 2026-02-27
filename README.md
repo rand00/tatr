@@ -78,6 +78,28 @@ To extract all library dependencies, preprocessors and the name of each executab
 --------------------------------------------------------------------------------
 ```
 
+## Compiling
+
+Clone repo:
+```bash
+git clone https://github.com/rand00/tatr.git
+cd tatr
+```
+
+Install dependencies for `tatr` via [`opam`](https://opam.ocaml.org/doc/Install.html):
+```bash
+opam install dune containers cmdliner re ppx_deriving 
+```
+Compile `tatr` itself:
+```bash
+dune build
+```
+
+Install the binary:
+```
+cp -f _build/default/bin/main.exe ~/bin/tatr
+```
+
 ## Related tools
 
 For textual search - often one will use something like a mix of `grep` and `find` - where you can
