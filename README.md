@@ -13,11 +13,11 @@ extract the exact paths within the indented trees of the found text-files that m
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
-00010:                  [ ] @fix that we have no bugs - create more bugs!
+00010:                  [ ] @fix that we have no bugs
 --------------------------------------------------------------------------------
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
-00011:  * these lines are also matched because of '@' not being a word-character by default ( fix )
-00012:          * (a line with the word 'code')
+00011:  * fix that these lines are also matched because of '@' not being a word-character by default 
+00012:          * a line with the word 'code'
 --------------------------------------------------------------------------------
 -- ~/my_notes/code/tatr.txt -----------------------------------
 00012:  [ ] @code; @fix some error
@@ -39,7 +39,7 @@ the text-format:
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
-00010:                  [ ] @fix that we have no bugs - create more bugs!
+00010:                  [ ] @fix that we have no bugs
 --------------------------------------------------------------------------------
 -- ~/my_notes/code/tatr.txt -----------------------------------
 00012:  [ ] @code; @fix some error
