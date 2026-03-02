@@ -25,13 +25,17 @@ module Indentation_tree = struct
         CCFormat.printf "%d: '%c'\n%!" i (Char.chr i)
       done
   *)
+
   let is_wordchar = function
     | 'a'..'z'
     | '_'
     | '-'
     | 'A'..'Z'
     | '0'..'9' -> true
-    | c -> let code = Char.code c in code >= 128 && code <= 255
+    | c ->
+      let code = Char.code c in
+      (*> See https://en.wikipedia.org/wiki/ISO/IEC_8859-1*)
+      CCInt.(code <> 0xD7 && code <> 0xF7 && (code >= 0xC0 && code <= 0xFF))
 
   (*> Note: I made this interface to avoid too much extra allocation for lines*)
   let extract_words ~include_char ~exclude_char ~from_idx line =
