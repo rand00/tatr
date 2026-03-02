@@ -8,6 +8,8 @@ extract the exact paths within the indented trees of the found text-files that m
 ### Matching on indentation-trees containing specific words
 ```bash
 > tatr --match-file='*.txt' fix,code ~/my_notes
+```
+```
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
@@ -32,6 +34,8 @@ specify that e.g. `#`/`@` should be included in matched words, so you can limit 
 the text-format:
 ```bash
 > tatr --match-file='*.txt' --include-chars=@ @fix,@code ~/my_notes
+```
+```
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
@@ -47,6 +51,8 @@ the text-format:
 specific library, `containers`:
 ```bash
 > tatr --extract-fulltree --match-file=dune libraries,containers .
+```
+```
 -- ./lib/dune ------------------------------------------------------------------
 00001:  (library
 ......
@@ -67,6 +73,8 @@ where `tatr` will match on all paths in trees that both include `tag0` and -- `t
 To extract all library dependencies, preprocessors and the name of each executable/library you could do:
 ```bash
 > tatr --eft --match-file=dune '(name|libraries|preprocess)' . 
+```
+```
 -- ./bin/dune ------------------------------------------------------------------
 00001:  (executable
 ......
