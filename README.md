@@ -5,7 +5,7 @@ extract the exact paths within the indented trees of the found text-files that m
 
 `tatr` has a bunch of useful configuration parameters - see `tatr --help` for the complete list. Some of the most useful ones 
 are the tree-extraction functions. The manual says
-``` bash
+``` 
   --extract-completetree, --ect
       Extract  the  complete tree where the query match somewhere within.
       This includes all branches - even those that don't match the query.
