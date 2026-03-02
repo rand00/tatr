@@ -39,7 +39,7 @@ See `tatr --help` for the complete list.
 > tatr --match-file='*.txt' fix,code ~/my_notes
 ```
 ```
--- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
+-- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt -----------------
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
 00010:                  [ ] @fix that we have no bugs
@@ -48,7 +48,7 @@ See `tatr --help` for the complete list.
 00011:  * fix that these lines are also matched because of '@' not being a word-character by default 
 00012:          * a line with the word 'code'
 --------------------------------------------------------------------------------
--- ~/my_notes/code/tatr.txt -----------------------------------
+-- ~/my_notes/code/tatr.txt ----------------------------------------------------
 00012:  [ ] @code; @fix some error
 --------------------------------------------------------------------------------
 ```
@@ -65,12 +65,12 @@ the text-format:
 > tatr --match-file='*.txt' --include-chars=@ @fix,@code ~/my_notes
 ```
 ```
--- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
+-- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt -----------------
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
 00010:                  [ ] @fix that we have no bugs
 --------------------------------------------------------------------------------
--- ~/my_notes/code/tatr.txt -----------------------------------
+-- ~/my_notes/code/tatr.txt ----------------------------------------------------
 00012:  [ ] @code; @fix some error
 --------------------------------------------------------------------------------
 ```
@@ -191,7 +191,7 @@ This method is e.g. compatible with
 ## Limitations
 
 There are some limitations of the default method of `tatr` when working with formats that hide their tree-nature within special syntax.
-This e.g. includes *headings* from markdown and wiki-formats, certain config-formats like `yaml`, and a lot of syntax in programming languages. 
+This e.g. includes *headings* from markdown and wiki-formats, certain config-formats like yaml, and a lot of syntax in programming languages. 
 
 Future support for some of these formats can be easily added to `tatr` via *pre-indenters* that map the syntax at the beginning of lines to 
 a synthetic indentation-level of the following text.
