@@ -4,7 +4,7 @@
 extract the exact paths within the indented trees of the found text-files that match your query.
 
 There are a bunch of useful configuration parameters - some are the tree-extraction functions
-that control what parts of the matched trees are returned. See `tatr --help` for the complete list.
+that control what parts of the matched trees are returned. 
 ``` 
   --extract-completetree, --ect
       Extract  the  complete tree where the query match somewhere within.
@@ -22,6 +22,8 @@ that control what parts of the matched trees are returned. See `tatr --help` for
       Extract  the  paths  of  tree  that  match  query  exactly  + their
       subtrees. This is the default.
 ```
+
+See `tatr --help` for the complete list.
 
 ## Examples 
 
