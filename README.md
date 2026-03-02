@@ -1,10 +1,17 @@
 # `tatr` - tagged tree matching
 
-`tatr` lets you recursively query into files on your filesystem for tags/words that match the given POSIX regular expressions, and 
-extract the exact paths within the indented trees of the found text-files that match your query.
+`tatr` lets you recursively query into files on your filesystem for tags/words that match the given
+*set* of [POSIX regular expressions](https://en.wikipedia.org/wiki/Regular_expression#POSIX)
+within indented trees of text - and then
+extract the exact paths within these trees that match your query. We use a lot of different
+structured textual formats with tree-structures based on text-indentation - which are all queryable
+via `tatr`.
 
-There are a bunch of useful configuration parameters - some are the tree-extraction functions
-that control what parts of the matched trees are returned. 
+The given regular expressions are anchored - so they will match the *whole* word or nothing at all.
+You can override this by explicitly matching on any character sequence with `.*`.
+
+A bunch of useful configuration parameters exist - some are the tree-extraction functions
+that control what parts of the matched trees are returned:
 ``` 
   --extract-completetree, --ect
       Extract  the  complete tree where the query match somewhere within.
