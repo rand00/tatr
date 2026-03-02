@@ -90,7 +90,6 @@ let main
   let get_line_num (v, _) = v.Line_data.line_num
   and get_line     (v, _) = v.Line_data.line
   in
-  (*> goto recursively find files if file is dir*)
   files
   |> Files.find_recursively ~match_filename
   |> CCSeq.iter (fun file ->
