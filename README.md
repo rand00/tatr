@@ -8,6 +8,18 @@ extract the exact paths within the indented trees of the found text-files that m
 ### Matching on indentation-trees containing specific words
 ```bash
 > tatr --match-file='*.txt' fix,code ~/my_notes
+-- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
+00008:  [ ] @code; would be nice to have this feature
+00009:          * which spans some lines
+00010:                  [ ] @fix that we have no bugs - create more bugs!
+--------------------------------------------------------------------------------
+-- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
+00011:  * these lines are also matched because of '@' not being a word-character by default ( fix )
+00012:          * (a line with the word 'code')
+--------------------------------------------------------------------------------
+-- ~/my_notes/code/tatr.txt -----------------------------------
+00012:  [ ] @code; @fix some error
+--------------------------------------------------------------------------------
 ```
 .. where `fix` and `code` are words (a commaseparated list of regular expressions) that need to be present in the matched tree, and `~/my_notes` is a directory to look in.
 Indented trees of text in notes usually come in the form of deeply nested indented points. 
@@ -20,6 +32,14 @@ specify that e.g. `#`/`@` should be included in matched words, so you can limit 
 the text-format:
 ```bash
 > tatr --match-file='*.txt' --include-chars=@ @fix,@code ~/my_notes
+-- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
+00008:  [ ] @code; would be nice to have this feature
+00009:          * which spans some lines
+00010:                  [ ] @fix that we have no bugs - create more bugs!
+--------------------------------------------------------------------------------
+-- ~/my_notes/code/tatr.txt -----------------------------------
+00012:  [ ] @code; @fix some error
+--------------------------------------------------------------------------------
 ```
 
 ### Querying your configuration-files for specific library dependencies
