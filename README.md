@@ -3,7 +3,7 @@
 `tatr` lets you recursively query into files on your filesystem for tags/words that match the given POSIX regular expressions, and 
 extract the exact paths within the indented trees of the found text-files that match your query.
 
-`tatr` has a bunch of useful configuration parameters - see `tatr --help` for the complete list. Some of the most useful ones 
+It has a bunch of useful configuration parameters - see `tatr --help` for the complete list. Some of the most useful ones 
 are the tree-extraction functions. The manual says
 ``` 
   --extract-completetree, --ect
