@@ -37,15 +37,18 @@ module A = struct
   let match_filter = 
     Arg.(value & vflag `Subtree [
       `Matchtree,    info ["extract-matchtree"; "emt"]
-        ~doc:"Extract only the paths of tree that match query completely.";
+        ~doc:"Extract only the paths of tree that match query exactly, excluding \
+              the rest of the tree.";
       `Subtree,      info ["extract-subtree"; "est" ]
-        ~doc:"Extract the paths of tree that match query completely + \
-              their subtrees. This is the default.";
+        ~doc:"Extract the paths of tree that match query exactly + their \
+              subtrees. This is the default.";
       `Fulltree,     info ["extract-fulltree"; "eft"]
-        ~doc:"Extract the paths of tree that match query completely + \
-              their subtrees and their ancestors.";
+        ~doc:"Extract the paths of tree that match query exactly + their \
+              subtrees and ancestors.";
       `Completetree, info ["extract-completetree"; "ect"]
-        ~doc:"Extract the complete tree where the query match somewhere within.";
+        ~doc:"Extract the complete tree where the query match somewhere within. \
+              This includes all branches - even those that don't match the \
+              query.";
     ])
   
   let case_is_significant = 

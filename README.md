@@ -1,7 +1,27 @@
 # `tatr` - tagged tree matching
 
 `tatr` lets you recursively query into files on your filesystem for tags/words that match the given POSIX regular expressions, and 
-extract the exact paths within the indented trees of the found text-files that match your query. 
+extract the exact paths within the indented trees of the found text-files that match your query.
+
+`tatr` has a bunch of useful configuration parameters - see `tatr --help` for the complete list. Some of the most useful ones 
+are the tree-extraction functions. The manual says
+``` bash
+  --extract-completetree, --ect
+      Extract  the  complete tree where the query match somewhere within.
+      This includes all branches - even those that don't match the query.
+
+  --extract-fulltree, --eft
+      Extract the paths of tree that match query exactly + their subtrees
+      and ancestors.
+
+  --extract-matchtree, --emt
+      Extract only the paths of tree that match query exactly,  excluding
+      the rest of the tree.
+
+  --extract-subtree, --est
+      Extract  the  paths  of  tree  that  match  query  exactly  + their
+      subtrees. This is the default.
+```
 
 ## Examples 
 
