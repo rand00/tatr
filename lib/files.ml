@@ -20,9 +20,10 @@ let find_recursively ~match_filename files =
       |> CCArray.to_seq
       |> CCSeq.map (Filename.concat file)
       |> CCSeq.filter (fun file ->
-        Sys.is_directory file || (
-          matching_filename (Filename.basename file)
-        )
+        match (Unix.lstat file).st_kind with
+        | S_REG -> matching_filename (Filename.basename file)
+        | S_DIR -> true
+        | _ -> false
       )
       |> CCSeq.flat_map aux
   in
