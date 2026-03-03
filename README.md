@@ -197,9 +197,8 @@ To solve this you can pass your structured format to some pretty-printer like: `
 `tatr` could possible get a feature to apply a user-specified script to text-files on recursive traversal. 
 
 A current ideal of `tatr` is to be as independent as possible from specific formats - and let the user rely on existing tools to make the given 
-text compatible with the `tatr` indentation-based interpretation.
+text compatible with the `tatr` indentation-based interpretation. 
 
-Currently the characters supported are those in [latin1](https://en.wikipedia.org/wiki/ISO/IEC_8859-1). Unicode support can be added if
-somebody has a need.
+
 
 
