@@ -11,6 +11,8 @@
  (libraries
   containers
   re
+  uuseg
+  uunf
   unix
   )
  (preprocess
