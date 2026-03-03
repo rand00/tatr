@@ -50,8 +50,15 @@
   * chars too
   
 //> testing unicode / latin1 support
+
 * some point with æ
 	* another with ø
 		* yet another with å
         * øre
+    * λ love
+
+//> testing numbers
+
+a num = 0
+  another = 99
 
