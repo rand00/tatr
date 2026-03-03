@@ -10,8 +10,8 @@ module Indentation_tree = struct
           | '\t' -> n_indent + tab_is_spaces, succ idx, None
           | ' '  -> n_indent + 1            , succ idx, None
           | '\n' ->
-            failwith "Parse.Indentation_tree.count_indent_until_visual: \
-                      we only support a single line as input"
+            Log.failwith "Parse.Indentation_tree.count_indent_until_visual" 
+              "Only a single line is supported as input"
           | _ ->
             let res = n_indent, idx, Some idx in
             raise @@ Shortcircuit res
@@ -20,49 +20,49 @@ module Indentation_tree = struct
     in
     n_indent, idx_visual
 
-  (*> Helpful for choosing the right visual char's:
-      for i = 0 to 255 do 
-        CCFormat.printf "%d: '%c'\n%!" i (Char.chr i)
-      done
-  *)
+  let is_wordgrapheme = function
+    | "-" | "_" -> true
+    | gc ->
+      let dec = CCString.get_utf_8_uchar gc 0 in
+      let uchar = Uchar.utf_decode_uchar dec in
+      let word_break = Uucp.Break.word uchar in
+      (* CCFormat.eprintf "DEBUG: gc = '%s' -- word_break = %a\n%!" *)
+      (*   gc Uucp.Break.pp_word word_break; *)
+      match word_break with
+      | `LE (*letter*) | `NU (*number*) -> true
+      | _ -> false 
 
-  let is_wordchar = function
-    | 'a'..'z'
-    | '_'
-    | '-'
-    | 'A'..'Z'
-    | '0'..'9' -> true
-    | c ->
-      let code = Char.code c in
-      (*> See https://en.wikipedia.org/wiki/ISO/IEC_8859-1*)
-      CCInt.(code <> 0xD7 && code <> 0xF7 && (code >= 0xC0 && code <= 0xFF))
-
-  (*> Note: I made this interface to avoid too much extra allocation for lines*)
-  let extract_words ~include_char ~exclude_char ~from_idx line =
-    let words = ref [] in
-    let word_range = ref None in
-    let maybe_append_word () =
-      match !word_range with
-      | None -> ()
-      | Some (start, stop) ->
-        let word_str = CCString.sub line start (stop - start) in
-        words := word_str :: !words;
-        word_range := None;
+  let extract_words ~include_grapheme ~exclude_grapheme ~from_idx line =
+    let acc_word = Buffer.create 128 in
+    let maybe_add_word words =
+      let new_word = Buffer.contents acc_word in
+      Buffer.clear acc_word;
+      if CCInt.Infix.(CCString.length new_word = 0) then
+        words
+      else 
+        new_word :: words 
     in
-    for i = from_idx to CCString.length line -1 do
-      let c = CCString.get line i in
-      if not (exclude_char c) && (include_char c || is_wordchar c) then (
-        let word_range' = match !word_range with
-          | None -> Some (i, i+1)
-          | Some (start, stop) -> Some (start, stop+1)
-        in
-        word_range := word_range';
+    let accumulate acc_words grapheme_cluster =
+      let gc = grapheme_cluster in
+      if
+        not (exclude_grapheme gc) && (
+          include_grapheme gc ||
+          is_wordgrapheme gc
+        )
+      then (
+        Buffer.add_string acc_word gc;
+        acc_words
       ) else (
-        maybe_append_word ()
+        maybe_add_word acc_words
       )
-    done;
-    maybe_append_word ();
-    CCList.rev !words
+    in
+    let words = 
+      line
+      |> Uunf_string.normalize_utf_8 Grapheme.normalization_method
+      |> Uuseg_string.fold_utf_8 `Grapheme_cluster accumulate []
+    in
+    maybe_add_word words 
+    |> CCList.rev
 
   let add_line ~config line_data tree =
     (*> Note that n-indent is not the same as index
@@ -80,11 +80,12 @@ module Indentation_tree = struct
     | Some idx_visual ->
       let words =
         extract_words
-          ~include_char:config.Config.include_char
-          ~exclude_char:config.Config.exclude_char
+          ~include_grapheme:config.Config.include_grapheme
+          ~exclude_grapheme:config.Config.exclude_grapheme
           ~from_idx:idx_visual
           line
       in
+      (* CCFormat.eprintf "DEBUG: words = %a\n%!" (CCList.pp CCString.pp) words; *)
       (* begin *)
       (*   if words |> CCList.exists (CCString.equal "rugbrød") then *)
       (*     CCFormat.eprintf "DEBUG: saw rugbrød\n%!"; *)

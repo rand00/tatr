@@ -53,8 +53,6 @@ let next_tree ~config in_chan unused_line_data =
   in
   aux line_num init_tree
 
-module CSet = CCSet.Make(CCChar)
-
 let main
     query
     files
@@ -65,6 +63,8 @@ let main
     case_is_significant
     match_filename
   =
+  CCFormat.set_color_default true;
+  let failwith = Log.failwith "Main" in
   let query = match query with
     | None -> failwith "You need to pass a query - see --help";
     | Some query ->
@@ -78,18 +78,20 @@ let main
       );
       query
   in
-  let include_chars = CSet.of_list include_chars in
-  let exclude_chars = CSet.of_list exclude_chars in
-  let include_char c = CSet.mem c include_chars in
-  let exclude_char c = CSet.mem c exclude_chars in
+  let include_chars = Grapheme.Set.of_list include_chars in
+  let exclude_chars = Grapheme.Set.of_list exclude_chars in
+  let include_grapheme c = Grapheme.Set.mem c include_chars in
+  let exclude_grapheme c = Grapheme.Set.mem c exclude_chars in
   let config = Config.{
     tab_is_spaces;
-    exclude_char;
-    include_char;
+    exclude_grapheme;
+    include_grapheme;
   } in
   let get_line_num (v, _) = v.Line_data.line_num
   and get_line     (v, _) = v.Line_data.line
   in
+  let sep_width = 80 in
+  let dashes = CCString.make sep_width '-' in
   files
   |> Files.find_recursively ~match_filename
   |> CCSeq.iter (fun file ->
@@ -112,22 +114,20 @@ let main
         begin match filtered_tree with
           | Nil -> ()
           | tree ->
-            let sep_width = 80 in
-            let dashes = CCString.make sep_width '-' in
             let file_title =
               let title = "-- " ^ file ^ " " in
               let title = title |> CCString.pad ~side:`Right ~c:'-' sep_width in
               title
             in
-            CCFormat.printf "%s\n%!" file_title;
+            CCFormat.printf "@{<magenta>%s@}\n%!" file_title;
             tree |> pretty_print_tree ~get_line_num ~get_line;
-            CCFormat.printf "%s\n%!" dashes;
         end;
         if read_more then loop @@ unused_line_data
       in
       loop None
     )
-  )
+  );
+  CCFormat.printf "@{<magenta>%s@}\n%!" dashes
 
 let () = Cli.apply main
 

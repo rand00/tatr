@@ -1,6 +1,6 @@
 
 type t = {
   tab_is_spaces : int;
-  include_char : char -> bool;
-  exclude_char : char -> bool;
+  include_grapheme : string (*normalized grapheme*) -> bool;
+  exclude_grapheme : string (*normalized grapheme*) -> bool;
 }
