@@ -43,11 +43,9 @@ See `tatr --help` for the complete list.
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
 00010:                  [ ] @fix that we have no bugs
---------------------------------------------------------------------------------
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
 00011:  * fix that these lines are also matched because of '@' not being a word-character by default 
 00012:          * a line with the word 'code'
---------------------------------------------------------------------------------
 -- ~/my_notes/code/tatr.txt ----------------------------------------------------
 00012:  [ ] @code; @fix some error
 --------------------------------------------------------------------------------
@@ -69,7 +67,6 @@ the text-format:
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
 00010:                  [ ] @fix that we have no bugs
---------------------------------------------------------------------------------
 -- ~/my_notes/code/tatr.txt ----------------------------------------------------
 00012:  [ ] @code; @fix some error
 --------------------------------------------------------------------------------
@@ -118,7 +115,6 @@ To extract all library dependencies, preprocessors and the name of each executab
 00019:     ppx_deriving.std
 00020:     )
 00021:    )
---------------------------------------------------------------------------------
 -- ./lib/dune ------------------------------------------------------------------
 00001:  (library
 00002:   (name tatr)
