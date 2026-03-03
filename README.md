@@ -40,14 +40,20 @@ See `tatr --help` for the complete list.
 ```
 ```
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt -----------------
+
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
 00010:                  [ ] @fix that we have no bugs
+
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt
+
 00011:  * fix that these lines are also matched because of '@' not being a word-character by default 
 00012:          * a line with the word 'code'
+
 -- ~/my_notes/code/tatr.txt ----------------------------------------------------
+
 00012:  [ ] @code; @fix some error
+
 --------------------------------------------------------------------------------
 ```
 .. where `fix` and `code` are words (a commaseparated list of regular expressions) that need to be present in the matched tree, and `~/my_notes` is a directory to look in.
@@ -64,11 +70,15 @@ the text-format:
 ```
 ```
 -- ~/my_notes/code/tatr/subtodos/20260302_some_new_feature.txt -----------------
+
 00008:  [ ] @code; would be nice to have this feature
 00009:          * which spans some lines
 00010:                  [ ] @fix that we have no bugs
+
 -- ~/my_notes/code/tatr.txt ----------------------------------------------------
+
 00012:  [ ] @code; @fix some error
+
 --------------------------------------------------------------------------------
 ```
 
@@ -80,10 +90,12 @@ specific library, `containers`:
 ```
 ```
 -- ./lib/dune ------------------------------------------------------------------
+
 00001:  (library
 ......
 00011:   (libraries
 00012:    containers
+
 --------------------------------------------------------------------------------
 ```
 
@@ -102,6 +114,7 @@ To extract all library dependencies, preprocessors and the name of each executab
 ```
 ```
 -- ./bin/dune ------------------------------------------------------------------
+
 00001:  (executable
 ......
 00004:   (name main)
@@ -115,7 +128,9 @@ To extract all library dependencies, preprocessors and the name of each executab
 00019:     ppx_deriving.std
 00020:     )
 00021:    )
+
 -- ./lib/dune ------------------------------------------------------------------
+
 00001:  (library
 00002:   (name tatr)
 ......
@@ -128,6 +143,7 @@ To extract all library dependencies, preprocessors and the name of each executab
 00017:     ppx_deriving.std
 00018:     )
 00019:    )
+
 --------------------------------------------------------------------------------
 ```
 
