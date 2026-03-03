@@ -49,3 +49,9 @@
   * and @char
   * chars too
   
+//> testing unicode / latin1 support
+* some point with æ
+	* another with ø
+		* yet another with å
+        * øre
+
