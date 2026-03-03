@@ -92,6 +92,7 @@ let main
   in
   let sep_width = 80 in
   let dashes = CCString.make sep_width '-' in
+  let found_any = ref false in
   files
   |> Files.find_recursively ~match_filename
   |> CCSeq.iter (fun file ->
@@ -114,20 +115,24 @@ let main
         begin match filtered_tree with
           | Nil -> ()
           | tree ->
+            found_any := true;
             let file_title =
               let title = "-- " ^ file ^ " " in
               let title = title |> CCString.pad ~side:`Right ~c:'-' sep_width in
               title
             in
-            CCFormat.printf "@{<magenta>%s@}\n%!" file_title;
+            CCFormat.printf "@{<magenta>%s@}\n\n%!" file_title;
             tree |> pretty_print_tree ~get_line_num ~get_line;
+            print_newline ();
         end;
         if read_more then loop @@ unused_line_data
       in
       loop None
     )
   );
-  CCFormat.printf "@{<magenta>%s@}\n%!" dashes
+  if !found_any then begin
+    CCFormat.printf "@{<magenta>%s@}\n%!" dashes
+  end
 
 let () = Cli.apply main
 
