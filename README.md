@@ -211,6 +211,9 @@ This is a minor limitation though, as
 * `tatr` outputs the line-numbers, so you don't need headings to find the match in the source-file
 * `tatr` was not made to match on *abstract syntax trees* of code - which needs a different kind of
   matcher that can parse the given programming language
+* when using any matcher but the `--match-completetree`, `tatr` will extract only the part of the tree you are interested in;
+  which lets you query for anything that has an indented treestructure *within* any other kind of format. For example,
+  query for your todo-notes within the code of your codebase.
 
 Another problem is if your structured format is not *pretty-printed* within each file - so the structure is not laid out via indentation.
 To solve this you can pass your structured format to some pretty-printer like: `cat my.json | jq '.' > my_pretty.json`. 
