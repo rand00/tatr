@@ -47,6 +47,12 @@ module Tree = struct
       checked_tree
     else
       Nil
+
+  (*> Note for the following algorithms - the 'is_complete' field of children
+      is now propagated to parents, which optimizes for how far down in tree we
+      need to look to find if subtree is complete. We can do this because for
+      now we have no other use for 'is_complete' than checking if whole subtree
+      contains complete children *)
   
   (** filters internal branches, but includes subtree+ancestors of matching paths *)
   let match_fulltree (query:t) tree : _ Tree.t =
@@ -80,7 +86,7 @@ module Tree = struct
             (*> @goto brian; this part filters children by itself, even though we
                 don't apply CCList.filter as part of 'matching_children'*)
             if any_child_is_complete then
-              Tree ((v, path_is_complete), matching_children)
+              Tree ((v, path_is_complete || any_child_is_complete), matching_children)
             else
               Nil
           )
@@ -91,7 +97,8 @@ module Tree = struct
           in
           match matching_children with
           | [] -> Nil
-          | children -> Tree ((v, path_is_complete), children)
+          | children ->
+            Tree ((v, true (*.. as some child is complete*)), children)
         )
     and aux_children ancestor_matched acc_path_matches children = 
       children |> CCList.filter_map (fun child ->
@@ -137,7 +144,7 @@ module Tree = struct
               in
               (*> Note: filtering incomplete paths in tree away*)
               if any_child_is_complete then
-                Tree ((v, path_is_complete), matching_children)
+                Tree ((v, path_is_complete || any_child_is_complete), matching_children)
               else
                 Nil
             )
@@ -154,14 +161,7 @@ module Tree = struct
             in
             (*> Note: filtering incomplete paths in tree away*)
             if path_is_complete || any_child_is_complete then
-              (*> @goto @brian; would it be an optimization if we propagated that
-                  some child is complete to our node?
-                  * then the 'is_complete' might shortcircuit faster?
-                    * though it's already good that 'is_complete' is depth-first
-                  * @Note; this could be applied in all alike branches of these
-                    algorithms
-              *)
-              Tree ((v, path_is_complete), matching_children)
+              Tree ((v, path_is_complete || any_child_is_complete), matching_children)
             else
               Nil
           )
@@ -172,7 +172,8 @@ module Tree = struct
           in
           match matching_children with
           | [] -> Nil
-          | children -> Tree ((v, path_is_complete), children)
+          | children ->
+            Tree ((v, true (*.. as some child is complete*)), children)
         ) else
           let matching_children =
             aux_children false acc_path_matches children
@@ -181,7 +182,8 @@ module Tree = struct
           match matching_children with
           | [] -> Nil
           | [ child ] -> child
-          | children -> Tree ((v, path_is_complete), children)
+          | children ->
+            Tree ((v, true (*.. as some child is complete*)), children)
     and aux_children ancestor_matched acc_path_matches children = 
       children |> CCList.filter_map (fun child ->
         match aux ancestor_matched acc_path_matches child with
