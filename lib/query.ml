@@ -79,31 +79,13 @@ module Tree = struct
         let path_is_complete = RSet.(cardinal acc_path_matches = cardinal query) in
         let found_match = not @@ RSet.is_empty matches in
         if found_match then (
-          if include_subtree then (
-            if path_is_complete then (
-              let children =
-                children
-                |> CCList.map (Tree.map (fun v -> (v, false)))
-              in
-              Tree ((v, path_is_complete), children)
-            ) else (
-              let matching_children =
-                aux_children true acc_path_matches children
-                |> CCList.filter is_complete
-              in
-              let any_child_is_complete = 
-                not @@ CCList.is_empty matching_children
-              in
-              (*> Note: filtering incomplete paths in tree away*)
-              if any_child_is_complete then
-                Tree ((v, path_is_complete || any_child_is_complete), matching_children)
-              else
-                Nil
-            )
-          ) else ( (*don't include subtree of matching branches*)
-            (*> @goto brian; note that this CCList.filter is running for each level of the tree
-                .. is this optimal enough? - could be more?
-            *)
+          if include_subtree && path_is_complete then (
+            let children =
+              children
+              |> CCList.map (Tree.map (fun v -> (v, false)))
+            in
+            Tree ((v, path_is_complete), children)
+          ) else ( 
             let matching_children =
               aux_children true acc_path_matches children
               |> CCList.filter is_complete
@@ -111,7 +93,6 @@ module Tree = struct
             let any_child_is_complete = 
               not @@ CCList.is_empty matching_children
             in
-            (*> Note: filtering incomplete paths in tree away*)
             if path_is_complete || any_child_is_complete then
               Tree ((v, path_is_complete || any_child_is_complete), matching_children)
             else
