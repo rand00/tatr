@@ -33,6 +33,7 @@ module Indentation_tree = struct
       | _ -> false 
 
   let extract_words ~include_grapheme ~exclude_grapheme ~from_idx line =
+    let line = CCString.sub line from_idx (CCString.length line - from_idx) in
     let acc_word = Buffer.create 128 in
     let maybe_add_word words =
       let new_word = Buffer.contents acc_word in
