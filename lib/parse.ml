@@ -87,10 +87,6 @@ module Indentation_tree = struct
           line
       in
       (* CCFormat.eprintf "DEBUG: words = %a\n%!" (CCList.pp CCString.pp) words; *)
-      (* begin *)
-      (*   if words |> CCList.exists (CCString.equal "rugbrød") then *)
-      (*     CCFormat.eprintf "DEBUG: saw rugbrød\n%!"; *)
-      (* end; *)
       let under parent = parent.Line_data.indent < indent in
       let v = Line_data.{ line_data with indent; words } in
       Tree.insert_in_first_path ~under v tree
