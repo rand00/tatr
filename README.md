@@ -199,6 +199,7 @@ is why `tatr` by default doesn't know about any specific textual format - but op
 This method is e.g. compatible with
 * note-taking formats: markdown, wiki, ...
 * pretty-printed config formats: json, sexp, xml, ...
+* indented trees *within* other textbased formats
 
 ## Limitations
 
