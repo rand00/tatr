@@ -203,10 +203,14 @@ This method is e.g. compatible with
 ## Limitations
 
 There are some limitations of the default method of `tatr` when working with formats that hide their tree-nature within special syntax.
-This e.g. includes *headings* from markdown and wiki-formats, certain config-formats like yaml, and a lot of syntax in programming languages. 
-
-Future support for some of these formats can be easily added to `tatr` via *pre-indenters* that map the syntax at the beginning of lines to 
-a synthetic indentation-level of the following text.
+This e.g. includes *headings* from markdown and wiki-formats, certain config-formats like yaml, and a lot of syntax in programming languages.
+This is a minor limitation though, as
+* the headings of note-taking formats often duplicate text present under them
+* including the tree-structure of headings etc. will lead to very deep trees being matched -
+  where the matching words can be very far apart; which makes them less related
+* `tatr` outputs the line-numbers, so you don't need headings to find the match in the source-file
+* `tatr` was not made to match on *abstract syntax trees* of code - which needs a different kind of
+  matcher that can parse the given programming language
 
 Another problem is if your structured format is not *pretty-printed* within each file - so the structure is not laid out via indentation.
 To solve this you can pass your structured format to some pretty-printer like: `cat my.json | jq '.' > my_pretty.json`. 
@@ -214,6 +218,15 @@ To solve this you can pass your structured format to some pretty-printer like: `
 
 A current ideal of `tatr` is to be as independent as possible from specific formats - and let the user rely on existing tools to make the given 
 text compatible with the `tatr` indentation-based interpretation. 
+
+## Future features
+
+Future support for hidden tree-structures of some of the beforementioned formats can be added to `tatr` via building in *pre-indenters*, that
+know parts of the (newline-dependent) syntax's of each format - and in a streaming fashion updates a synthetic-indentation-state that
+modifies what `tatr` thinks the real indentation-level is. If built into `tatr` in this way, the matched printed trees will
+keep the original indentations.
+
+
 
 
 
