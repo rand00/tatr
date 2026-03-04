@@ -69,7 +69,7 @@ module Tree = struct
             in
             Tree ((v, path_is_complete), children)
           ) else (
-            (*> goto make tests for this logic, where all children are included if _some_ child is complete*)
+            (*> @goto make tests for this logic, where all children are included if _some_ child is complete*)
             let matching_children =
               aux_children true acc_path_matches children
             in
@@ -77,7 +77,7 @@ module Tree = struct
               matching_children
               |> CCList.exists is_complete
             in
-            (*> goto brian; this part filters children by itself, even though we
+            (*> @goto brian; this part filters children by itself, even though we
                 don't apply CCList.filter as part of 'matching_children'*)
             if any_child_is_complete then
               Tree ((v, path_is_complete), matching_children)
@@ -142,7 +142,7 @@ module Tree = struct
                 Nil
             )
           ) else ( (*don't include subtree of matching branches*)
-            (*> goto brian; note that this CCList.filter is running for each level of the tree
+            (*> @goto brian; note that this CCList.filter is running for each level of the tree
                 .. is this optimal enough? - could be more?
             *)
             let matching_children =
@@ -154,10 +154,12 @@ module Tree = struct
             in
             (*> Note: filtering incomplete paths in tree away*)
             if path_is_complete || any_child_is_complete then
-              (*> goto @brian; would it be an optimization if we propagated that
+              (*> @goto @brian; would it be an optimization if we propagated that
                   some child is complete to our node?
                   * then the 'is_complete' might shortcircuit faster?
                     * though it's already good that 'is_complete' is depth-first
+                  * @Note; this could be applied in all alike branches of these
+                    algorithms
               *)
               Tree ((v, path_is_complete), matching_children)
             else
