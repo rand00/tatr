@@ -54,66 +54,18 @@ module Tree = struct
       now we have no other use for 'is_complete' than checking if whole subtree
       contains complete children *)
   
-  (** filters internal branches, but includes subtree+ancestors of matching paths *)
-  let match_fulltree (query:t) tree : _ Tree.t =
-    let rec aux ancestor_matched acc_path_matches = function
-      | Nil -> Nil
-      | Tree (v, children) ->
-        let matches, _ =
-          query |> RSet.partition (fun regex ->
-            v.Line_data.words |> CCList.exists regex.Tag_regex.prop 
-          )
-        in
-        let acc_path_matches = RSet.union matches acc_path_matches in
-        let path_is_complete = RSet.(cardinal acc_path_matches = cardinal query) in
-        let found_match = not @@ RSet.is_empty matches in
-        if found_match || ancestor_matched then (
-          if path_is_complete then (
-            let children =
-              children
-              |> CCList.map (Tree.map (fun v -> (v, false)))
-            in
-            Tree ((v, path_is_complete), children)
-          ) else (
-            (*> @goto make tests for this logic, where all children are included if _some_ child is complete*)
-            let matching_children =
-              aux_children true acc_path_matches children
-            in
-            let any_child_is_complete =
-              matching_children
-              |> CCList.exists is_complete
-            in
-            (*> @goto brian; this part filters children by itself, even though we
-                don't apply CCList.filter as part of 'matching_children'*)
-            if any_child_is_complete then
-              Tree ((v, path_is_complete || any_child_is_complete), matching_children)
-            else
-              Nil
-          )
-        ) else ((*havn't found any match yet*)
-          let matching_children =
-            aux_children false acc_path_matches children
-            |> CCList.filter is_complete
-          in
-          match matching_children with
-          | [] -> Nil
-          | children ->
-            Tree ((v, true (*.. as some child is complete*)), children)
-        )
-    and aux_children ancestor_matched acc_path_matches children = 
-      children |> CCList.filter_map (fun child ->
-        match aux ancestor_matched acc_path_matches child with
-        | Nil -> None
-        | tree -> Some tree
-      )
-    in
-    aux false RSet.empty tree
-
   (**
+     @param include_ancestors: if children match - include their ancestors
      @param include_subtree: for every branch that matches all tags in query,
      include the whole subtree beneath that branch
   *)
-  let match_matchtree ?(include_subtree=false) (query:t) tree : _ Tree.t =
+  let match_matchtree
+      ?(include_subtree=false)
+      ?(include_ancestors=false)
+      (query:t)
+      tree
+    : _ Tree.t
+    =
     let rec aux ancestor_matched acc_path_matches = function
       | Nil -> Nil
       | Tree (v, children) ->
@@ -174,16 +126,17 @@ module Tree = struct
           | [] -> Nil
           | children ->
             Tree ((v, true (*.. as some child is complete*)), children)
-        ) else
+        ) else ((*havn't found any match yet*)
           let matching_children =
             aux_children false acc_path_matches children
             |> CCList.filter is_complete
           in
           match matching_children with
           | [] -> Nil
-          | [ child ] -> child
+          | [ child ] when not include_ancestors -> child
           | children ->
             Tree ((v, true (*.. as some child is complete*)), children)
+        )
     and aux_children ancestor_matched acc_path_matches children = 
       children |> CCList.filter_map (fun child ->
         match aux ancestor_matched acc_path_matches child with
@@ -195,5 +148,8 @@ module Tree = struct
 
   let match_subtree (query:t) tree : _ Tree.t =
     match_matchtree ~include_subtree:true query tree
+  
+  let match_fulltree (query:t) tree : _ Tree.t =
+    match_matchtree ~include_ancestors:true ~include_subtree:true query tree
   
 end
