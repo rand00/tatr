@@ -1,5 +1,6 @@
 
 // > 'query=niseq' should match all nodes that contain it
+
 * top
   * @niseq
     * @niseq
@@ -11,6 +12,7 @@
 //> more complex tree structure to test nesting
 //  * interesting query (via match_matchtree) on this: 'dune exec tatr '*tree*,another' <file>'
 //    * it extracts selected subbranches correctly (:
+
 * the tree
   * has branches
     * with children
