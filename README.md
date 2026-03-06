@@ -203,8 +203,8 @@ extract these sections.
 I realized that we use a lot of other structured formats based on textual indentation to represent trees of related elements - which 
 is why `tatr` by default doesn't know about any specific textual format - but operates solely based on indentation.
 This method is e.g. compatible with
-* note-taking formats: markdown, wiki, ...
-* pretty-printed config formats: json, sexp, xml, ...
+* note-taking formats: markdown, wiki, org-mode, ...
+* pretty-printed config formats: json, s-expressions, xml, ...
 * indented trees *within* other textbased formats
 
 ## Limitations
@@ -216,8 +216,8 @@ This is a minor limitation though, as
 * including the tree-structure of headings etc. will lead to very deep trees being matched -
   where the matching words can be very far apart; which makes them less related
 * `tatr` outputs the line-numbers, so you don't need headings to find the match in the source-file
-* `tatr` was not made to match on *abstract syntax trees* of code - which needs a different kind of
-  matcher that can parse the given programming language
+* `tatr` was not made to match on *abstract syntax trees* of code - which needs a [different kind of
+  matcher](https://semgrep.dev/) that can parse the given programming language
 * when using any matcher but the `--match-completetree`, `tatr` will extract only the part of the tree you are interested in;
   which lets you query for anything that has an indented treestructure *within* any other kind of format. For example,
   query for your todo-notes within the code of your codebase.
