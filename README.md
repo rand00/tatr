@@ -106,7 +106,8 @@ specific library, `containers`:
 
 .. there are different *extraction* algorithms to let you choose what part of the matched tree is returned.
 In this example `--extract-fulltree` both includes the subtree beneath the match (none here) and the ancestors 
-towards the root (here `library`). 
+towards the root (here `library`). Line-ranges in matched tree that are hidden (as per the extraction algorithm) are
+printed as `......`.
 
 ### Querying your configuration-files for all library dependencies
 
