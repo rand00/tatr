@@ -7,10 +7,15 @@ extract the exact paths within these trees that match your query. We use a lot o
 structured textual formats with tree-structures based on text-indentation - which are all queryable
 via `tatr`.
 
-The given regular expressions are anchored - so they will match the *whole* word or nothing at all.
+As `tatr` by default is independent from any syntax other than indentations, and as `tatr` extracts
+only the parts of the trees you are interested in - you can query for
+indented trees *within* any possibly incompatible format. 
+
+Note that the given regular expressions are anchored - so they will match the *whole* word or nothing at all.
+This is the natural semantics for specifying tags.
 You can override this by explicitly matching on any character sequence with `.*`.
 
-A bunch of useful configuration parameters exist - some are the tree-extraction functions
+A bunch of useful parameters exist - some are the tree-extraction functions
 that control what parts of the matched trees are returned:
 ``` 
   --extract-completetree, --ect
@@ -171,11 +176,13 @@ cp -f _build/default/bin/main.exe ~/bin/tatr
 
 ## Related tools
 
-For textual search - often one will use something like a mix of `grep` and `find` - where you can
-search for words within a single line - but these tools
-don't operate at the tree-level. 
+For textual search - often one will use something like a
+[mix of `grep` and `find`](https://github.com/rand00/linux-everyday-scripts/blob/master/fegrep/fegrep.sh) or
+[ripgrep](https://github.com/BurntSushi/ripgrep) -
+where you can
+search for patterns within a single line - but these tools don't operate at the tree-level like `tatr`. 
 
-A notetaking system like `zim` let you query for matching pages that contains tags - but not at the indented tree-level.
+A notetaking system like `zim` let you query for matching *pages* that contains a set of tags - but not at the indented tree-level.
 
 Another notetaking system, `logseq`, has a feature called *flashcards*  where you tag a point-indented line with `#flashcard` and 
 then make a nested point with the answer. Then the system can play back questions to you and expose the answer upon request. 
@@ -218,7 +225,11 @@ This is a minor limitation though, as
 
 Another problem is if your structured format is not *pretty-printed* within each file - so the structure is not laid out via indentation.
 To solve this you can pass your structured format to some pretty-printer like: `cat my.json | jq '.' > my_pretty.json`. 
-`tatr` could possible get a feature to apply a user-specified script to text-files on recursive traversal. 
+`tatr` could possible get a feature to apply a user-specified script to text-files on recursive traversal.
+
+The query-DSL of `tatr` is a comma-separated list of regular expressions, which is currently parsed simply by splitting on comma.
+This means that you can't use commas in your regex's - which I don't know why you would want. If this
+becomes a need, a new multishot CLI option `--tag` could be added.
 
 A current ideal of `tatr` is to be as independent as possible from specific formats - and let the user rely on existing tools to make the given 
 text compatible with the `tatr` indentation-based interpretation. 
@@ -226,7 +237,7 @@ text compatible with the `tatr` indentation-based interpretation.
 ## Future features
 
 Future support for hidden tree-structures of some of the beforementioned formats can be added to `tatr` via building in *pre-indenters*, that
-know parts of the (newline-dependent) syntax's of each format - and in a streaming fashion updates a synthetic-indentation-state that
+know parts of the syntax's of each format - and in a streaming fashion updates a synthetic-indentation-state that
 modifies what `tatr` thinks the real indentation-level is. If built into `tatr` in this way, the matched printed trees will
 keep the original indentations.
 
