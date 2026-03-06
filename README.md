@@ -129,11 +129,6 @@ To extract all library dependencies, preprocessors and the name of each executab
 00014:    tatr
 00015:    cmdliner
 00016:    )
-00017:   (preprocess
-00018:    (pps
-00019:     ppx_deriving.std
-00020:     )
-00021:    )
 
 -- ./lib/dune ------------------------------------------------------------------
 
@@ -143,12 +138,15 @@ To extract all library dependencies, preprocessors and the name of each executab
 00011:   (libraries
 00012:    containers
 00013:    re
-00014:    )
-00015:   (preprocess
-00016:    (pps
-00017:     ppx_deriving.std
-00018:     )
-00019:    )
+00014:    uuseg
+00015:    uunf
+00016:    unix
+00017:    )
+00018:   (preprocess
+00019:    (pps
+00020:     ppx_deriving.std
+00021:     )
+00022:    )
 
 --------------------------------------------------------------------------------
 ```
