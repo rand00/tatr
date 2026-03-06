@@ -69,7 +69,7 @@ I will probably write a blogpost in the future about how it's useful to take not
 ### Configuring `tatr` to include special characters to search for *tags*
 There are several options that allow you to configure `tatr` for your specific format - e.g. `--include-chars` lets you
 specify that e.g. `#`/`@` should be included in matched words, so you can limit yourself to match *tags* as specified in 
-the text-format:
+the given text-format:
 ```bash
 > tatr --match-file='*.txt' --include-chars=@ @fix,@code ~/my_notes
 ```
