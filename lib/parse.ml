@@ -32,10 +32,12 @@ module Indentation_tree = struct
       | `LE (*letter*) | `NU (*number*) -> true
       | _ -> false 
 
-  (*> @goto optimize; this is an expensive function based on linux 'perf' report
+  (*> @goto @optimize; this is an expensive function based on linux 'perf' report
       * @idea; construct a `re` regex that splits line up into words
         * where all word-graphemes are normalized + inserted in regex expr '[..]+'
           * and 'exclude_grapheme' is used to remove graphemes from this list 
+          * < @problem; 're' doesn't yet support unicode - so method has problems
+            * see branch '20260307_optimizing_via_limited_alphabets'
   *)
   let extract_words ~include_grapheme ~exclude_grapheme ~from_idx line =
     let line = CCString.sub line from_idx (CCString.length line - from_idx) in
