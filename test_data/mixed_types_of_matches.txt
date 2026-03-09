@@ -58,6 +58,7 @@
 		* yet another with å
         * øre
     * λ love
+    * »
 
 //> testing numbers
 
