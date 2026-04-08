@@ -2,6 +2,8 @@
 open Tatr
 open Tree.T
 
+let sp = CCFormat.sprintf
+
 let pretty_print_tree ~get_line_num ~get_line tree =
   let prev_line_num = ref None in
   tree |> Tree.iter_df (fun v ->
@@ -96,39 +98,45 @@ let main
   files
   |> Files.find_recursively ~match_filename
   |> CCSeq.iter (fun file ->
-    In_channel.with_open_text file (fun in_chan ->
-      let rec loop unused_line_data =
-        let tree, unused_line_data, read_more =
-          next_tree ~config in_chan unused_line_data
+    let query_file () = 
+      In_channel.with_open_text file (fun in_chan ->
+        let rec loop unused_line_data =
+          let tree, unused_line_data, read_more =
+            next_tree ~config in_chan unused_line_data
+          in
+          (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
+          let filtered_tree = match match_filter with
+            | `Matchtree ->
+              Query.Tree.match_matchtree query tree
+            | `Subtree ->
+              Query.Tree.match_subtree query tree
+            | `Fulltree ->
+              Query.Tree.match_fulltree query tree
+            | `Completetree ->
+              Query.Tree.match_completetree query tree
+          in
+          begin match filtered_tree with
+            | Nil -> ()
+            | tree ->
+              found_any := true;
+              let file_title =
+                let title = "-- " ^ file ^ " " in
+                let title = title |> CCString.pad ~side:`Right ~c:'-' sep_width in
+                title
+              in
+              CCFormat.printf "@{<magenta>%s@}\n\n%!" file_title;
+              tree |> pretty_print_tree ~get_line_num ~get_line;
+              print_newline ();
+          end;
+          if read_more then loop @@ unused_line_data
         in
-        (* CCFormat.eprintf "DEBUG: loop full tree =\n%a\n%!" (Tree.pp Line_data.pp) tree; *)
-        let filtered_tree = match match_filter with
-          | `Matchtree ->
-            Query.Tree.match_matchtree query tree
-          | `Subtree ->
-            Query.Tree.match_subtree query tree
-          | `Fulltree ->
-            Query.Tree.match_fulltree query tree
-          | `Completetree ->
-            Query.Tree.match_completetree query tree
-        in
-        begin match filtered_tree with
-          | Nil -> ()
-          | tree ->
-            found_any := true;
-            let file_title =
-              let title = "-- " ^ file ^ " " in
-              let title = title |> CCString.pad ~side:`Right ~c:'-' sep_width in
-              title
-            in
-            CCFormat.printf "@{<magenta>%s@}\n\n%!" file_title;
-            tree |> pretty_print_tree ~get_line_num ~get_line;
-            print_newline ();
-        end;
-        if read_more then loop @@ unused_line_data
-      in
-      loop None
-    )
+        loop None
+      )
+    in
+    try query_file () with
+    | exn ->
+      Log.warn "Main" @@ sp "Opening file '%s' failed with:\n\t%s"
+        file (Printexc.to_string exn);
   );
   if !found_any then begin
     CCFormat.printf "@{<magenta>%s@}\n%!" dashes
